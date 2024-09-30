@@ -2,7 +2,7 @@ import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const TrackingForm = React.lazy(() => import('./views/dashboard/TrackingForm'))
-
+const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory'))
 
 
 
@@ -43,6 +43,7 @@ const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/trackingform', name: 'Shipment Tracker', element: TrackingForm },
+  { path: '/shipmenthistory', name: 'Shipment History', element: ShipmentHistory },
   { path: '/buttons', name: 'Buttons', element: Buttons, exact: true },
   { path: '/buttons/buttons', name: 'Buttons', element: Buttons },
   { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns },

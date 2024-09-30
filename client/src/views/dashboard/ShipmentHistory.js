@@ -8,18 +8,24 @@ const ShipmentHistory = ({ history }) => {
         <thead>
           <tr>
             <th>Status</th>
-            <th>Updated At</th>
+            <th>Date Received</th>
             <th>Location</th>
           </tr>
         </thead>
         <tbody>
-          {history.map((entry, index) => (
-            <tr key={index}>
-              <td>{entry.status}</td>
-              <td>{new Date(entry.updated_at).toLocaleString()}</td>
-              <td>{entry.location}</td>
+          {Array.isArray(history) && history.length > 0 ? (
+            history.map((entry, index) => (
+              <tr key={index}>
+                <td>{entry.status}</td>
+                <td>{new Date(entry.updated_at).toLocaleString()}</td>
+                <td>{entry.location}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="3">No shipment history available</td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>

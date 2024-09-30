@@ -36,7 +36,16 @@ const _nav = [
       text: 'NEW',
     },
   },
-
+  {
+    component: CNavItem,
+    name: 'Shipment History',
+    to: '/shipmenthistory',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    badge: {
+      color: 'info',
+      text: 'NEW',
+    },
+  },
  
   
 ]
