@@ -1,8 +1,7 @@
 // Here you can add other styles
-    *{
-    outline: rgba(0, 0, 0, 0.5) solid 1px;
+    * {
+        outline: rgba(0, 0, 0, 0.5) solid 1px;
     }
-
     * {
     margin: 0;
     padding: 0;
@@ -28,7 +27,6 @@
     color: white;
     padding: 20px;
     }
-
     .center-elements {
     padding: 16px;
     text-align: center;
@@ -59,12 +57,12 @@
     }
     
     #shipment-info {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        padding: 16px;
+        text-align: center;
         margin-top: 20px;
-        padding: 20px;
+        display: flex;
+        flex-grow: 1 1 0;
+        justify-content: center;
         background-color: #f9f9f9;
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -72,6 +70,7 @@
     
     #shipment-info h2, #shipment-info p {
         text-align: center;
+        
         margin: 10px 0;
     }
     

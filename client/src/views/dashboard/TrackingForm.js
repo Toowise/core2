@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import Map from './Map';
+import axios from 'axios';
+
 
 const TrackingForm = () => {
     const [trackingNumber, setTrackingNumber] = useState('');
     const [shipmentData, setShipmentData] = useState(null);
     const [shipmentHistory, setShipmentHistory] = useState([]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!trackingNumber) {
             alert('Please enter a tracking number.');
@@ -14,38 +15,30 @@ const TrackingForm = () => {
         }
 
         
-        fetch('http://localhost:3000/track', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ trackingNumber }) 
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await axios.post('http://localhost:5000/track', { trackingNumber });
+            const data = response.data;
+
             if (data.status === 'error') {
                 alert(data.message);
                 return;
             }
+
             setShipmentData(data);
+
             
-            return fetch(`http://localhost:3000/shipment-history/${trackingNumber}`);
-        })
-        .then(response => {
-            if (response) return response.json();
-            return null;
-        })
-        .then(historyData => {
-            if (historyData && historyData.status === 'success') {
+            const historyResponse = await axios.get(`http://localhost:5000/shipment-history/${trackingNumber}`);
+            const historyData = historyResponse.data;
+
+            if (historyData.status === 'success') {
                 setShipmentHistory(historyData.data);
             } else {
-                setShipmentHistory([]); 
+                setShipmentHistory([]);
             }
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Error fetching shipment data:', error);
             alert('An error occurred while fetching shipment data. Please try again later.');
-        });
+        }
     };
 
     return (
