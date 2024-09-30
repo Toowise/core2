@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import ShipmentHistory from './ShipmentHistory';
 import ShipmentInfo from './ShipmentInfo';
 
 const TrackingForm = () => {
   const [trackingNumber, setTrackingNumber] = useState('')
   const [shipmentData, setShipmentData] = useState(null)
-  const [shipmentHistory, setShipmentHistory] = useState([])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,17 +23,6 @@ const TrackingForm = () => {
       }
 
       setShipmentData(data)
-
-      const historyResponse = await axios.get(
-        `http://localhost:5000/shipment-history/${trackingNumber}`,
-      )
-      const historyData = historyResponse.data
-
-      if (historyData.status === 'success') {
-        setShipmentHistory(historyData.data)
-      } else {
-        setShipmentHistory([])
-      }
     } catch (error) {
       console.error('Error fetching shipment data:', error)
       alert('An error occurred while fetching shipment data. Please try again later.')
@@ -55,10 +42,9 @@ const TrackingForm = () => {
       </form>
 
       {shipmentData ? <ShipmentInfo data={shipmentData} /> : null}
-      {shipmentHistory ? <ShipmentHistory history={shipmentHistory} /> : null}
       
     </div>
   )
 }
 
-export default TrackingForm
+export default TrackingForm;
