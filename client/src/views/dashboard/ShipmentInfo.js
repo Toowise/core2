@@ -1,5 +1,5 @@
-import React from 'react';
-
+import React from 'react'
+import PropTypes from 'prop-types'
 const ShipmentInfo = ({ data }) => {
   return (
     <div id="shipment-info">
@@ -9,7 +9,14 @@ const ShipmentInfo = ({ data }) => {
       <p>Current Location: {data.current_location}</p>
       <p>Expected Delivery: {new Date(data.expected_delivery).toLocaleDateString()}</p>
     </div>
-  );
-};
-
-export default ShipmentInfo;
+  )
+}
+ShipmentInfo.propTypes = {
+    data: PropTypes.shape({
+    status: PropTypes.string.isRequired,
+    updated_at: PropTypes.instanceOf(Date).isRequired,
+    current_location: PropTypes.string.isRequired,
+    expected_delivery: PropTypes.instanceOf(Date).isRequired
+  }).isRequired
+}
+export default ShipmentInfo

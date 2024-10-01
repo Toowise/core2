@@ -3,12 +3,6 @@ import React from 'react'
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const TrackingForm = React.lazy(() => import('./views/dashboard/TrackingForm'))
 const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory'))
-
-
-
-
-
-
 // Buttons
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))

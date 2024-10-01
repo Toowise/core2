@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import ShipmentInfo from './ShipmentInfo';
+import React, { useState } from 'react'
+import axios from 'axios'
+import ShipmentInfo from './ShipmentInfo'
 
 const TrackingForm = () => {
   const [trackingNumber, setTrackingNumber] = useState('')
@@ -42,9 +42,7 @@ const TrackingForm = () => {
       </form>
 
       {shipmentData ? <ShipmentInfo data={shipmentData} /> : null}
-      
     </div>
   )
 }
-
-export default TrackingForm;
+export default TrackingForm

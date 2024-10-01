@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-
 import { ring } from 'ldrs'
-ring.register()
-
+ring.register
 const ShipmentHistory = ({ history }) => {
   const [shipmentHistory, setShipmentHistory] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -30,7 +28,7 @@ const ShipmentHistory = ({ history }) => {
     fetchShipmentHistory() 
   }, [])
   return (
-    <div id="shipment-history" className=''>
+    <div id="shipment-history" className="">
       <h2 className=''>Shipment History</h2>
       {loading ? (
         <span>
@@ -40,18 +38,20 @@ const ShipmentHistory = ({ history }) => {
         <table id="history-table">
           <thead>
             <tr>
+             <th>Tracking Number</th>
               <th>Status</th>
              <th>Date Received</th>
-              <th>Location</th>
+              <th>Address</th>
             </tr>
           </thead>
           <tbody>
             {shipmentHistory ? (
               shipmentHistory.map((entry, index) => (
                 <tr key={index}>
+                  <td>{entry.trackingNumber}</td>
                   <td>{entry.status}</td>
                   <td>{new Date(entry.updated_at).toLocaleString()}</td>
-                  <td>{entry.location}</td>
+                  <td>{entry.deliveryAddress}</td>
                 </tr>
               ))
             ) : (
@@ -66,4 +66,4 @@ const ShipmentHistory = ({ history }) => {
   )
 }
 
-export default ShipmentHistory
+export default ShipmentHistory;
