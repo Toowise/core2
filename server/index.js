@@ -10,10 +10,7 @@ app.use(express.json());
 
 
 const mongoURI = 'mongodb://localhost:27017/shiptrack'; 
-mongoose.connect(mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(mongoURI)
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -24,11 +21,13 @@ const trackDataSchema = new mongoose.Schema({
     updated_at: Date,
     current_location: String,
     expected_delivery: Date,
-    current_latitude: Number,
-    current_longitude: Number,
+    deliveryAddress: String,
+    
+    
 });
 
 const TrackData = mongoose.model('Trackdata', trackDataSchema);
+
 
 
 app.post('/track', async (req, res) => {
@@ -39,8 +38,11 @@ app.post('/track', async (req, res) => {
 
         if (shipment) {
             return res.json({
-                status: 'success',
-                data: shipment
+                status: shipment.status,
+                trackingNumber: shipment.trackingNumber,
+                current_location : shipment.current_location,
+                expected_delivery: shipment.expected_delivery,
+                updated_at : shipment.updated_at
             });
         } else {
             return res.status(404).json({ status: 'error', message: 'Invalid Tracking Number' });
@@ -52,24 +54,25 @@ app.post('/track', async (req, res) => {
 });
 
 
-app.get('/shipment-history/:trackingNumber', async (req, res) => {
-    const { trackingNumber } = req.params;
-
+app.get('/history', async (req,res) => {
     try {
-        const shipmentHistory = await TrackData.find({ trackingNumber }); 
-        if (shipmentHistory.length > 0) {
-            return res.json({ status: 'success', data: shipmentHistory });
+        const shippedData = await TrackData.find(); 
+        if (shippedData.length > 0) {
+            res.json({ status: 'success', data: shippedData });
         } else {
-            return res.status(404).json({ status: 'error', message: 'No shipment history found' });
+            res.status(404).json({ status: 'error', message: 'No shipped data found' });
         }
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment history.' });
+        console.error('Error fetching shipment data:', err);
+        res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
     }
 });
+
 
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+
  

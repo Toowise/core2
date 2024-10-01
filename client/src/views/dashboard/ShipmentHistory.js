@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { ring } from 'ldrs'
-ring.register
+ring.register()
 const ShipmentHistory = ({ history }) => {
   const [shipmentHistory, setShipmentHistory] = useState(null)
   const [loading, setLoading] = useState(true)
