@@ -22,8 +22,9 @@ jobs:
           cd client
           npm i
           npm run lint
+          npm run build
           
-      - name: Build Server
+      - name: Lint Server
         run: |
           cd server
           npm i
