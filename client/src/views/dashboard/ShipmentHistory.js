@@ -2,34 +2,34 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { ring } from 'ldrs'
 ring.register()
-const ShipmentHistory = ({ history }) => {
+const ShipmentHistory = ({}) => {
   const [shipmentHistory, setShipmentHistory] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/history') 
+        const response = await axios.get('http://localhost:5000/history')
         const data = response.data
 
         if (data.status === 'success') {
-          setShipmentHistory(data.data) 
+          setShipmentHistory(data.data)
         } else {
-          setShipmentHistory([]) 
+          setShipmentHistory([])
         }
       } catch (error) {
         console.error('Error fetching shipment history:', error)
-        setShipmentHistory([]) 
+        setShipmentHistory([])
       } finally {
         setLoading(false)
       }
     }
 
-    fetchShipmentHistory() 
+    fetchShipmentHistory()
   }, [])
   return (
     <div id="shipment-history" className="">
-      <h2 className=''>Shipment History</h2>
+      <h2 className="">Shipment History</h2>
       {loading ? (
         <span>
           <l-ring size="40" stroke="5" bg-opacity="0" speed="2" color="black" />
@@ -38,9 +38,9 @@ const ShipmentHistory = ({ history }) => {
         <table id="history-table">
           <thead>
             <tr>
-             <th>Tracking Number</th>
+              <th>Tracking Number</th>
               <th>Status</th>
-             <th>Date Received</th>
+              <th>Date Received</th>
               <th>Address</th>
             </tr>
           </thead>
@@ -66,4 +66,4 @@ const ShipmentHistory = ({ history }) => {
   )
 }
 
-export default ShipmentHistory;
+export default ShipmentHistory

@@ -12,11 +12,11 @@ const ShipmentInfo = ({ data }) => {
   )
 }
 ShipmentInfo.propTypes = {
-    data: PropTypes.shape({
+  data: PropTypes.shape({
     status: PropTypes.string.isRequired,
     updated_at: PropTypes.instanceOf(Date).isRequired,
     current_location: PropTypes.string.isRequired,
-    expected_delivery: PropTypes.instanceOf(Date).isRequired
-  }).isRequired
+    expected_delivery: PropTypes.instanceOf(Date).isRequired,
+  }).isRequired,
 }
 export default ShipmentInfo
