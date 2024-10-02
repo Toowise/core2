@@ -6,7 +6,7 @@
     "scripts": {
         "production": "node index",
         "dev": "nodemon index",
-        "prettier": "node_modules/prettier/bin/prettier.cjs ./ --write"
+        "lint": "node_modules/prettier/bin/prettier.cjs ./ --write"
     },
     "keywords": [],
     "author": "The Freight Capsone Team (https://github.com/orgs/freight-capstone/people)",
@@ -18,10 +18,11 @@
         "cors": "^2.8.5",
         "csrf": "^3.1.0",
         "dotenv": "^16.4.5",
+        "eslint": "^9.11.1",
         "express": "^4.21.0",
         "express-validator": "^7.2.0",
         "jsonwebtoken": "^9.0.2",
-        "lint": "^0.8.19",
+        "lint": "^1.1.2",
         "mongodb": "^6.8.0",
         "mongoose": "^8.7.0",
         "pino": "^9.3.2",
