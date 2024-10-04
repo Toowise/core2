@@ -5,7 +5,7 @@ const ShipmentInfo = ({ data }) => {
     <div id="shipment-info">
       <h2>Shipment Details</h2>
       <p>Status: {data.status}</p>
-      <p>Last Updated: {new Date(data.updated_at).toLocaleString()}</p>
+      <p>Last Updated: {data.updated_at.toLocaleDateString()}</p>
       <p>Current Location: {data.current_location}</p>
       <p>Expected Delivery: {new Date(data.expected_delivery).toLocaleDateString()}</p>
     </div>
@@ -17,6 +17,8 @@ ShipmentInfo.propTypes = {
     updated_at: PropTypes.instanceOf(Date).isRequired,
     current_location: PropTypes.string.isRequired,
     expected_delivery: PropTypes.instanceOf(Date).isRequired,
+    lat: PropTypes.number.isRequired,
+    lng: PropTypes.number.isRequired,
   }).isRequired,
 }
 export default ShipmentInfo
