@@ -22,7 +22,14 @@ const trackDataSchema = new mongoose.Schema({
     current_location: String,
     expected_delivery: Date,
     deliveryAddress: String,
-    
+    latitude: {
+        type: Number,   
+        required: true, 
+    },
+    longitude: {
+        type: Number,   
+        required: true,
+    }
     
 });
 
@@ -42,7 +49,9 @@ app.post('/track', async (req, res) => {
                 trackingNumber: shipment.trackingNumber,
                 current_location : shipment.current_location,
                 expected_delivery: shipment.expected_delivery,
-                updated_at : shipment.updated_at
+                updated_at : shipment.updated_at,
+                latitude: Number(shipment.latitude), 
+                longitude: Number(shipment.longitude), 
             });
         } else {
             return res.status(404).json({ status: 'error', message: 'Invalid Tracking Number' });
@@ -51,6 +60,7 @@ app.post('/track', async (req, res) => {
         console.error(err);
         res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
     }
+    
 });
 
 
