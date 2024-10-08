@@ -17,8 +17,6 @@ ShipmentInfo.propTypes = {
     updated_at: PropTypes.instanceOf(Date).isRequired,
     current_location: PropTypes.string.isRequired,
     expected_delivery: PropTypes.instanceOf(Date).isRequired,
-    lat: PropTypes.number.isRequired,
-    lng: PropTypes.number.isRequired,
   }).isRequired,
 }
 export default ShipmentInfo

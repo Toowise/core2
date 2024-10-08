@@ -49,7 +49,7 @@ const TrackingForm = () => {
         center={[latitude, longitude]}
         zoom={zoom}
         className="border-card overflow-hidden mt-4 w-full"
-        style={{ height: '200px' }}
+        style={{ height: '300px' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <Marker position={[latitude, longitude]} />
