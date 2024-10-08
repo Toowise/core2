@@ -1,14 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios'); 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
 app.use(cors());
 app.use(express.json());
 
-const mongoURI = 'mongodb://localhost:27017/shiptrack';
+const mongoURI = process.env.mongoURIProduction;
 mongoose.connect(mongoURI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
@@ -100,5 +100,6 @@ app.get('/history', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on PORT: ${PORT}`);
+  console.log(`SHEEEESH POGI KO!!!`);
 });
