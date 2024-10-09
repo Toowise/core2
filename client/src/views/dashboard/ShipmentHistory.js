@@ -41,7 +41,7 @@ const ShipmentHistory = ({}) => {
               <th>Tracking Number</th>
               <th>Status</th>
               <th>Date Received</th>
-              <th>Address</th>
+              <th> Delivery Address</th>
             </tr>
           </thead>
           <tbody>
