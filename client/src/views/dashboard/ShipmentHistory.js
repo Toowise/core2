@@ -3,15 +3,15 @@ import axios from 'axios'
 import { ring } from 'ldrs'
 ring.register()
 const ShipmentHistory = () => {
-  const [shipmentHistory, setShipmentHistory] = useState([]);
-  const [loading, setLoading] = useState(true); 
-  const [editMode, setEditMode] = useState(null); 
+  const [shipmentHistory, setShipmentHistory] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [editMode, setEditMode] = useState(null)
 
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/history');
-        const data = response.data;
+        const response = await axios.get('http://localhost:5000/history')
+        const data = response.data
 
         if (data.status === 'success') {
           setShipmentHistory(data.data)
@@ -26,19 +26,19 @@ const ShipmentHistory = () => {
       }
     }
 
-    fetchShipmentHistory();
+    fetchShipmentHistory()
   }, [])
-  
+
   const handleDelete = async (trackingNumber) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
       try {
-        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`);
+        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`)
 
         if (response.data.status === 'success') {
           setShipmentHistory((prevHistory) =>
-            prevHistory.filter((shipment) => shipment.trackingNumber !== trackingNumber)
-          );
-          setEditMode(null);
+            prevHistory.filter((shipment) => shipment.trackingNumber !== trackingNumber),
+          )
+          setEditMode(null)
         } else {
           alert('Error deleting shipment: ' + response.data.message)
         }
@@ -51,7 +51,7 @@ const ShipmentHistory = () => {
   const handleEditClick = (trackingNumber) => {
     setEditMode(trackingNumber)
   }
-  
+
   return (
     <div id="shipment-history">
       <h2>Shipment History</h2>
@@ -71,7 +71,7 @@ const ShipmentHistory = () => {
             </tr>
           </thead>
           <tbody>
-          {shipmentHistory.length > 0 ? (
+            {shipmentHistory.length > 0 ? (
               shipmentHistory.map((entry, index) => (
                 <tr key={index}>
                   <td>{entry.trackingNumber}</td>
