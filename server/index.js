@@ -20,6 +20,8 @@ const trackDataSchema = new mongoose.Schema({
   current_location: String,
   expected_delivery: Date,
   deliveryAddress: String,
+  carrier: String,
+  contact: String,
   latitude: {
     type: Number,
     required: false, 
@@ -34,7 +36,7 @@ const TrackData = mongoose.model('Trackdata', trackDataSchema);
 
 
 const getCoordinates = async (location) => {
-  const apiKey = '16640e6ac8e44d81b7860668ca6faf24'; 
+  const apiKey = process.env.apiKey 
   const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${apiKey}`;
 
   try {
@@ -46,6 +48,22 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
+
+app.delete('/track/:trackingNumber', async (req, res) => {
+  const { trackingNumber } = req.params;
+
+  try {
+      const deletedShipment = await TrackData.findOneAndDelete(trackingNumber);
+      
+      if (!deletedShipment) {
+          return res.status(404).json({ status: 'error', message: 'Shipment not found' });
+      }
+      res.json({ status: 'success', message: 'Shipment deleted successfully' });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ status: 'error', message: 'Error deleting shipment' });
+  }
+});
 
 app.post('/track', async (req, res) => {
   const { trackingNumber } = req.body;
@@ -75,6 +93,8 @@ app.post('/track', async (req, res) => {
         updated_at: shipment.updated_at,
         latitude: Number(shipment.latitude),
         longitude: Number(shipment.longitude),
+        carrier: shipment.carrier,
+        contact: shipment.contact,
       });
     } else {
       return res.status(404).json({ status: 'error', message: 'Invalid Tracking Number' });
@@ -82,6 +102,25 @@ app.post('/track', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
+  }
+});
+app.put('/shipments/update', async (req, res) => {
+  const { trackingNumber, carrier, contact } = req.body;
+
+  try {
+    const shipment = await TrackData.findOne({ trackingNumber: trackingNumber });
+    
+    if (!shipment) {
+      return res.status(404).json({ message: 'Shipment not found' });
+    }
+
+    shipment.carrier = carrier;
+    shipment.contact = contact;
+
+    const updatedShipment = await shipment.save();
+    res.json(updatedShipment);
+  } catch (err) {
+    res.status(500).json({ message:'Update Failed'});
   }
 });
 
