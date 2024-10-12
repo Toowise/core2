@@ -38,9 +38,8 @@ const TrackingForm = () => {
         updated_at: new Date(data.updated_at),
         expected_delivery: new Date(data.expected_delivery),
       })
-      setCarrier(data.carrier);
-      setContact(data.contact);
-
+      setCarrier(data.carrier)
+      setContact(data.contact)
     } catch (error) {
       console.error('Error fetching shipment data:', error)
       alert('An error occurred while fetching shipment data. Please try again later.')
@@ -48,34 +47,34 @@ const TrackingForm = () => {
   }
   //Update
   const handleUpdate = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!shipmentData) {
-      alert('No shipment data to update.');
-      return;
+      alert('No shipment data to update.')
+      return
     }
 
     try {
       const response = await axios.put('http://localhost:5000/shipments/update', {
         trackingNumber,
         carrier,
-        contact
-      });
+        contact,
+      })
 
       if (response.data) {
-        setShipmentData({ ...shipmentData, carrier, contact });
-        alert('Carrier and contact information updated successfully!');
-        setIsEditMode(false);
-        setIsModalOpen(false);
+        setShipmentData({ ...shipmentData, carrier, contact })
+        alert('Carrier and contact information updated successfully!')
+        setIsEditMode(false)
+        setIsModalOpen(false)
       }
     } catch (error) {
       console.log('error')
-      console.error('Error updating shipment data:', error);
-      alert('An error occurred while updating shipment data. Please try again later.');
+      console.error('Error updating shipment data:', error)
+      alert('An error occurred while updating shipment data. Please try again later.')
     }
   }
   const toggleEditMode = () => {
-  setIsEditMode(!isEditMode);
-  setIsModalOpen(true);
+    setIsEditMode(!isEditMode)
+    setIsModalOpen(true)
   }
   //Create Map
   const renderMap = () => {
@@ -110,9 +109,7 @@ const TrackingForm = () => {
       </form>
       {shipmentData && (
         <div className="edit">
-          <button onClick={toggleEditMode}>
-            {isEditMode ? 'Cancel' : 'Edit Carrier Info'}
-          </button>
+          <button onClick={toggleEditMode}>{isEditMode ? 'Cancel' : 'Edit Carrier Info'}</button>
         </div>
       )}
       {shipmentData && <ShipmentInfo data={shipmentData} />}
@@ -143,7 +140,6 @@ const TrackingForm = () => {
           <button type="submit">Update Carrier Info</button>
         </form>
       </Modal>
-      
     </div>
   )
 }

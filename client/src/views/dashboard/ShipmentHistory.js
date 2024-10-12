@@ -68,8 +68,7 @@ const ShipmentHistory = ({}) => {
         </table>
       )}
     </div>
-  );
-};
-
+  )
+}
 
 export default ShipmentHistory

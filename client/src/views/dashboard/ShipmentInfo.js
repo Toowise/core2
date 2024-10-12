@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 const ShipmentInfo = ({ data }) => {
   return (
     <div id="shipment-info">
-      <h2>Shipment Details</h2> 
+      <h2>Shipment Details</h2>
       <p>Status: {data.status}</p>
       <p>Last Updated: {data.updated_at.toLocaleDateString()}</p>
       <p>Current Location: {data.current_location}</p>
