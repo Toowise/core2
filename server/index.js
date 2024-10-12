@@ -20,8 +20,6 @@ const trackDataSchema = new mongoose.Schema({
   current_location: String,
   expected_delivery: Date,
   deliveryAddress: String,
-  carrier: String,
-  contact: String,
   latitude: {
     type: Number,
     required: false, 
@@ -48,22 +46,6 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
-
-app.delete('/track/:trackingNumber', async (req, res) => {
-  const { trackingNumber } = req.params;
-
-  try {
-      const deletedShipment = await TrackData.findOneAndDelete(trackingNumber);
-      
-      if (!deletedShipment) {
-          return res.status(404).json({ status: 'error', message: 'Shipment not found' });
-      }
-      res.json({ status: 'success', message: 'Shipment deleted successfully' });
-  } catch (err) {
-      console.error(err);
-      res.status(500).json({ status: 'error', message: 'Error deleting shipment' });
-  }
-});
 
 app.post('/track', async (req, res) => {
   const { trackingNumber } = req.body;
