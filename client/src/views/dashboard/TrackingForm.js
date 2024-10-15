@@ -72,6 +72,12 @@ const TrackingForm = () => {
       alert('An error occurred while updating shipment data. Please try again later.')
     }
   }
+  const handleCancel = () => {
+    setIsEditMode(false); 
+    setIsModalOpen(false); 
+    setCarrier(shipmentData?.carrier || ''); 
+    setContact(shipmentData?.contact || ''); 
+  };
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode)
     setIsModalOpen(true)
@@ -137,7 +143,8 @@ const TrackingForm = () => {
               placeholder="Update Contact Number"
             />
           </div>
-          <button type="submit">Update Carrier Info</button>
+          <button type="update">Update Carrier Info</button>
+          <button type="cancel" onClick={handleCancel}>Cancel</button>
         </form>
       </Modal>
     </div>

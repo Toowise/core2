@@ -9,7 +9,7 @@
         "lint": "node_modules/prettier/bin/prettier.cjs ./ --write"
     },
     "keywords": [],
-    "author": "The Freight Capsone Team (https://github.com/orgs/freight-capstone/people)",
+    "author": "The Freight Capstone Team (https://github.com/orgs/freight-capstone/people)",
     "license": "CC-BY-NC-4.0",
     "description": "cd",
     "dependencies": {

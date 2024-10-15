@@ -3,8 +3,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios'); 
-const app = express();
+const app = express();  
+const User = require('./models/User');
 const PORT = process.env.PORT || 5000;
+const Admin = require('./middleware/Admin');
 app.use(cors());
 app.use(express.json());
 
@@ -20,6 +22,8 @@ const trackDataSchema = new mongoose.Schema({
   current_location: String,
   expected_delivery: Date,
   deliveryAddress: String,
+  carrier: String,
+  contact: String,
   latitude: {
     type: Number,
     required: false, 
@@ -29,9 +33,7 @@ const trackDataSchema = new mongoose.Schema({
     required: false, 
   }
 });
-
 const TrackData = mongoose.model('Trackdata', trackDataSchema);
-
 
 const getCoordinates = async (location) => {
   const apiKey = process.env.apiKey 
@@ -46,6 +48,65 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
+//Login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.password !== password) { 
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    res.json({ user: { username: user.username, role: user.role } });
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+
+//Create User
+app.post('/createUser', Admin, async (req, res) => {
+  const { username, password, role } = req.body;
+
+  try {
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    const newUser = new User({
+      username,
+      password: hashedPassword,  
+      role,  
+    });
+
+    await newUser.save();
+    
+    res.json({ message: 'User created successfully', newUser });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Failed to create user' });
+  }
+});
+
+app.delete('/track/:trackingNumber',Admin, async (req, res) => {
+  const { trackingNumber } = req.params;
+  try {
+      const deletedShipment = await TrackData.findOneAndDelete(trackingNumber);
+      
+      if (!deletedShipment) {
+          return res.status(404).json({ status: 'error', message: 'Shipment not found' });
+      }
+      res.json({ status: 'success', message: 'Shipment deleted successfully' });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ status: 'error', message: 'Error deleting shipment' });
+  }
+});
 
 app.post('/track', async (req, res) => {
   const { trackingNumber } = req.body;
@@ -99,10 +160,10 @@ app.put('/shipments/update', async (req, res) => {
     shipment.carrier = carrier;
     shipment.contact = contact;
 
-    const updatedShipment = await shipment.save();
+    const updatedShipment = await shipment.save()
     res.json(updatedShipment);
   } catch (err) {
-    res.status(500).json({ message:'Update Failed'});
+    res.status(500).json({ message:'Update Failed'})
   }
 });
 
