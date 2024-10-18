@@ -1,56 +1,58 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { ring } from 'ldrs'
-ring.register()
-const ShipmentHistory = () => {
-  const [shipmentHistory, setShipmentHistory] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [editMode, setEditMode] = useState(null)
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { ring } from 'ldrs';
+ring.register();
+
+const ShipmentHistory = ({ userRole }) => {
+  const [shipmentHistory, setShipmentHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(null);
 
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/history')
-        const data = response.data
+        const response = await axios.get('http://localhost:5000/history');
+        const data = response.data;
 
         if (data.status === 'success') {
-          setShipmentHistory(data.data)
+          setShipmentHistory(data.data);
         } else {
-          setShipmentHistory([])
+          setShipmentHistory([]);
         }
       } catch (error) {
-        console.error('Error fetching shipment history:', error)
-        setShipmentHistory([])
+        console.error('Error fetching shipment history:', error);
+        setShipmentHistory([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchShipmentHistory()
-  }, [])
+    fetchShipmentHistory();
+  }, []);
 
   const handleDelete = async (trackingNumber) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
       try {
-        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`)
+        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`);
 
         if (response.data.status === 'success') {
           setShipmentHistory((prevHistory) =>
             prevHistory.filter((shipment) => shipment.trackingNumber !== trackingNumber),
-          )
-          setEditMode(null)
+          );
+          setEditMode(null);
         } else {
-          alert('Error deleting shipment: ' + response.data.message)
+          alert('Error deleting shipment: ' + response.data.message);
         }
       } catch (error) {
-        console.error('Error deleting shipment:', error)
-        alert('An error occurred while deleting the shipment.')
+        console.error('Error deleting shipment:', error);
+        alert('An error occurred while deleting the shipment.');
       }
     }
-  }
+  };
+
   const handleEditClick = (trackingNumber) => {
-    setEditMode(trackingNumber)
-  }
+    setEditMode(trackingNumber);
+  };
 
   return (
     <div id="shipment-history">
@@ -66,7 +68,7 @@ const ShipmentHistory = () => {
               <th>Tracking Number</th>
               <th>Status</th>
               <th>Date Received</th>
-              <th> Delivery Address</th>
+              <th>Delivery Address</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -79,24 +81,30 @@ const ShipmentHistory = () => {
                   <td>{new Date(entry.updated_at).toLocaleString()}</td>
                   <td>{entry.deliveryAddress}</td>
                   <td>
-                    {editMode === entry.trackingNumber ? (
-                      <button onClick={() => handleDelete(entry.trackingNumber)}>Delete</button>
+                    {userRole === 'admin' ? (
+                      <>
+                        {editMode === entry.trackingNumber ? (
+                          <button onClick={() => handleDelete(entry.trackingNumber)}>Delete</button>
+                        ) : (
+                          <button onClick={() => handleEditClick(entry.trackingNumber)}>Edit</button>
+                        )}
+                      </>
                     ) : (
-                      <button onClick={() => handleEditClick(entry.trackingNumber)}>Edit</button>
+                      <span>No Actions Available</span>
                     )}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5">No shipment history available</td>
+                <td colSpan="5">No shipment history available.</td>
               </tr>
             )}
           </tbody>
         </table>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ShipmentHistory
+export default ShipmentHistory;

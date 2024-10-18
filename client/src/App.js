@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import 'leaflet/dist/leaflet.css';
 import { CSpinner, useColorModes } from '@coreui/react';
 import './scss/style.scss';
-import Dashboard from './views/dashboard/Dashboard';
+import Parent from './views/dashboard/parent';
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Login = React.lazy(() => import('./views/pages/login/Login'));
@@ -15,10 +15,9 @@ const Page500 = React.lazy(() => import('./views/pages/page500/Page500'));
 const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
   const storedTheme = useSelector((state) => state.theme);
-  
-  // State to hold the user
-  const [user, setUser] = useState(null);
-  const isAuthenticated = user !== null; // Determine if the user is authenticated
+
+  const [user, setUser] = useState({});
+  const isAuthenticated = user !== null;
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.href.split('?')[1]);
@@ -32,7 +31,7 @@ const App = () => {
     }
 
     setColorMode(storedTheme);
-  }, [isColorModeSet, setColorMode, storedTheme]); // Added dependencies to avoid stale closures
+  }, [isColorModeSet, setColorMode, storedTheme]);
 
   return (
     <HashRouter>
@@ -44,15 +43,14 @@ const App = () => {
         }
       >
         <Routes>
-          {/* Route for login */}
           <Route
             path="/login"
             element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login setUser={setUser} />}
           />
 
-          {/* Protected route for dashboard */}
+          {/* Route for dashboard */}
           <Route
-            path="/dashboard/*"
+            path="/"
             element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
           />
 

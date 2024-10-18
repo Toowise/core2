@@ -8,13 +8,24 @@ const Login = ({ setUser }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await axios.post('http://localhost:5000/login', { username, password });
-      const { user } = response.data;
-
-      if (user) {
-        setUser(user);
+      console.log('Login response:', response.data); 
+      
+      const { token, user } = response.data;
+  
+      if (token) {
+        console.log('User Role:', user.userRole); 
+  
+        sessionStorage.setItem('token', token);
+  
+        const loggedInUser = {
+          username: user.username,
+          userRole: user.userRole 
+        };
+  
+        setUser(loggedInUser);
       } else {
         setError('Invalid credentials');
       }
@@ -23,18 +34,19 @@ const Login = ({ setUser }) => {
       console.error(err);
     }
   };
+  
 
   return (
     <div className="login-container">
       <div className="login-card">
         <h2>Login</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>} 
         <form onSubmit={handleLogin}>
           <input
             type="text"
             placeholder="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value)} 
             required
           />
           <input
@@ -44,7 +56,7 @@ const Login = ({ setUser }) => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button type="submit">Login</button>
+          <button type="submit">Login</button> 
         </form>
       </div>
     </div>
@@ -52,4 +64,3 @@ const Login = ({ setUser }) => {
 };
 
 export default Login;
-
