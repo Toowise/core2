@@ -13,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 const mongoURI = process.env.mongoURIProduction;
+
 mongoose.connect(mongoURI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
@@ -58,7 +59,6 @@ app.post('/login', async (req, res) => {
     
     const user = await User.findOne({ username });
 
-   
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -77,7 +77,7 @@ app.post('/login', async (req, res) => {
       { expiresIn: '1h' }  
     );
 
-   
+    console.log(user);
     res.json({ 
       token, 
       user: { 
@@ -114,7 +114,7 @@ app.post('/createUser', Admin, async (req, res) => {
   }
 });
 
-app.delete('/track/:trackingNumber',Admin, async (req, res) => {
+app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
   try {
       const deletedShipment = await TrackData.findOneAndDelete(trackingNumber);
@@ -204,5 +204,4 @@ app.get('/history', async (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on PORT: ${PORT}`);
-  console.log(`SHEEEESH POGI KO!!!`);
 });

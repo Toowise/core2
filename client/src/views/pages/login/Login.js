@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useStateContext } from '../../../context/contextProvider';
 
-const Login = ({ setUser }) => {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+
+  const { setUser } = useStateContext();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,7 +19,6 @@ const Login = ({ setUser }) => {
       const { token, user } = response.data;
   
       if (token) {
-        console.log('User Role:', user.userRole); 
   
         sessionStorage.setItem('token', token);
   

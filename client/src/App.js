@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import 'leaflet/dist/leaflet.css';
 import { CSpinner, useColorModes } from '@coreui/react';
 import './scss/style.scss';
+import { useStateContext } from './context/contextProvider';
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Login = React.lazy(() => import('./views/pages/login/Login'));
@@ -15,7 +16,7 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
   const storedTheme = useSelector((state) => state.theme);
 
-  const [user, setUser] = useState(null);
+  const { user } = useStateContext();
   const isAuthenticated = user !== null;
 
   useEffect(() => {
@@ -44,7 +45,7 @@ const App = () => {
         <Routes>
           <Route
             path="/login"
-            element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login setUser={setUser} />}
+            element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />}
           />
 
           {/* Route for dashboard */}
@@ -59,7 +60,7 @@ const App = () => {
           <Route path="/500" element={<Page500 />} />
 
           {/* Fallback route */}
-          <Route path="*" name="Home" element={<DefaultLayout />} />
+          <Route path="*" name="Home" element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />} />
         </Routes>
       </Suspense>
     </HashRouter>

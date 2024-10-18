@@ -5,8 +5,9 @@ import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import ShipmentInfo from './ShipmentInfo';
 import Modal from './Modal';
+import { useStateContext } from '../../context/contextProvider';
 
-const TrackingForm = ({ userRole={} }) => {
+const TrackingForm = () => {
   const [trackingNumber, setTrackingNumber] = useState('');
   const [shipmentData, setShipmentData] = useState(null);
   const [carrier, setCarrier] = useState('');
@@ -14,6 +15,8 @@ const TrackingForm = ({ userRole={} }) => {
   const [zoom, setZoom] = useState(13);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { user } = useStateContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -114,7 +117,7 @@ const TrackingForm = ({ userRole={} }) => {
         />
         <button type="submit">Track</button>
       </form>
-      {shipmentData && userRole === 'admin' && (
+      {shipmentData && user?.userRole === 'admin' && (
         <div className="edit">
           <button onClick={toggleEditMode}>{isEditMode ? 'Cancel' : 'Edit Carrier Info'}</button>
         </div>
@@ -165,10 +168,6 @@ const MapCenterUpdater = ({ lat, lng }) => {
 MapCenterUpdater.propTypes = {
   lat: PropTypes.number.isRequired,
   lng: PropTypes.number.isRequired,
-};
-
-TrackingForm.propTypes = {
-  userRole: PropTypes.string.isRequired,
 };
 
 export default TrackingForm;

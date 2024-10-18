@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ring } from 'ldrs';
 ring.register();
-
-const ShipmentHistory = ({ userRole }) => {
+import { useStateContext } from '../../context/contextProvider';
+const ShipmentHistory = () => {
   const [shipmentHistory, setShipmentHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(null);
-
+  const {user}= useStateContext();
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
@@ -81,7 +81,7 @@ const ShipmentHistory = ({ userRole }) => {
                   <td>{new Date(entry.updated_at).toLocaleString()}</td>
                   <td>{entry.deliveryAddress}</td>
                   <td>
-                    {userRole === 'admin' ? (
+                    {user?.userRole === 'admin' ? (
                       <>
                         {editMode === entry.trackingNumber ? (
                           <button onClick={() => handleDelete(entry.trackingNumber)}>Delete</button>
