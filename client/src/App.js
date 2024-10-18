@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import 'leaflet/dist/leaflet.css';
 import { CSpinner, useColorModes } from '@coreui/react';
 import './scss/style.scss';
-import Parent from './views/dashboard/parent';
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
 const Login = React.lazy(() => import('./views/pages/login/Login'));
@@ -16,7 +15,7 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
   const storedTheme = useSelector((state) => state.theme);
 
-  const [user, setUser] = useState({});
+  const [user, setUser] = useState(null);
   const isAuthenticated = user !== null;
 
   useEffect(() => {

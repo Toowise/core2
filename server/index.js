@@ -7,6 +7,8 @@ const app = express();
 const User = require('./models/User');
 const PORT = process.env.PORT || 5000;
 const Admin = require('./middleware/Admin');
+const bcryptjs = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 app.use(cors());
 app.use(express.json());
 
@@ -53,17 +55,36 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    
     const user = await User.findOne({ username });
 
+   
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    if (user.password !== password) { 
+    
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    res.json({ user: { username: user.username, role: user.role } });
+   
+    const token = jwt.sign(
+      { username: user.username, userRole: user.userRole },
+      process.env.JWT_SECRET,  
+      { expiresIn: '1h' }  
+    );
+
+   
+    res.json({ 
+      token, 
+      user: { 
+        username: user.username, 
+        userRole: user.userRole  
+      } 
+    });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ message: 'Server error' });
