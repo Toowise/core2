@@ -3,6 +3,7 @@ const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const TrackingForm = React.lazy(() => import('./views/dashboard/TrackingForm'))
 const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory'))
+const CreateUserForm = React.lazy(() => import('./views/dashboard/CreateUser'))
 // Buttons
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))
@@ -39,6 +40,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/trackingform', name: 'Shipment Tracker', element: TrackingForm },
   { path: '/shipmenthistory', name: 'Shipment History', element: ShipmentHistory },
+  { path: '/createuser', name: 'Create User', element: CreateUserForm },
   { path: '/buttons', name: 'Buttons', element: Buttons, exact: true },
   { path: '/buttons/buttons', name: 'Buttons', element: Buttons },
   { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns },

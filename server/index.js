@@ -93,8 +93,8 @@ app.post('/login', async (req, res) => {
 
 
 //Create User
-app.post('/createUser', Admin, async (req, res) => {
-  const { username, password, role } = req.body;
+app.post('/createUser', async (req, res) => {
+  const { username, password, userRole } = req.body;
 
   try {
     const hashedPassword = await bcryptjs.hash(password, 10);
@@ -102,7 +102,7 @@ app.post('/createUser', Admin, async (req, res) => {
     const newUser = new User({
       username,
       password: hashedPassword,  
-      role,  
+      userRole,  
     });
 
     await newUser.save();

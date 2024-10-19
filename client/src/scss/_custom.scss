@@ -26,6 +26,52 @@ h1 {
   padding: 20px;
 }
 
+//create user css
+.create-user-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  background-color: #f5f5f5;
+}
+
+.create-user-card {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  text-align: center;
+}
+
+.create-user-card h2 {
+  margin-bottom: 20px;
+}
+
+.create-user-card input,
+.create-user-card select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.create-user-card button {
+  width: 100%;
+  padding: 10px;
+  background-color: #f32d17;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.create-user-card button:hover {
+  background-color: #e22b16;
+}
+
+
 .center-elements {
   padding: 16px;
   text-align: center;

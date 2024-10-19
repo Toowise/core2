@@ -46,5 +46,15 @@ const _nav = [
       text: 'NEW',
     },
   },
+  {
+    component: CNavItem,
+    name: 'Create User',
+    to: '/createuser',
+    icon: <CIcon icon={cilSpeedometer} customClassName="nav-icon" />,
+    badge: {
+      color: 'info',
+      text: 'NEW',
+    },
+  },
 ]
 export default _nav
