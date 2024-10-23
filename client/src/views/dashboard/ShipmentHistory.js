@@ -1,58 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ring } from 'ldrs';
-ring.register();
-import { useStateContext } from '../../context/contextProvider';
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { ring } from 'ldrs'
+ring.register()
+import { useStateContext } from '../../context/contextProvider'
 const ShipmentHistory = () => {
-  const [shipmentHistory, setShipmentHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(null);
-  const {user}= useStateContext();
+  const [shipmentHistory, setShipmentHistory] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [editMode, setEditMode] = useState(null)
+  const { user } = useStateContext()
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/history');
-        const data = response.data;
+        const response = await axios.get('http://localhost:5000/history')
+        const data = response.data
 
         if (data.status === 'success') {
-          setShipmentHistory(data.data);
+          setShipmentHistory(data.data)
         } else {
-          setShipmentHistory([]);
+          setShipmentHistory([])
         }
       } catch (error) {
-        console.error('Error fetching shipment history:', error);
-        setShipmentHistory([]);
+        console.error('Error fetching shipment history:', error)
+        setShipmentHistory([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchShipmentHistory();
-  }, []);
+    fetchShipmentHistory()
+  }, [])
 
   const handleDelete = async (trackingNumber) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
       try {
-        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`);
+        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`)
 
         if (response.data.status === 'success') {
           setShipmentHistory((prevHistory) =>
             prevHistory.filter((shipment) => shipment.trackingNumber !== trackingNumber),
-          );
-          setEditMode(null);
+          )
+          setEditMode(null)
         } else {
-          alert('Error deleting shipment: ' + response.data.message);
+          alert('Error deleting shipment: ' + response.data.message)
         }
       } catch (error) {
-        console.error('Error deleting shipment:', error);
-        alert('An error occurred while deleting the shipment.');
+        console.error('Error deleting shipment:', error)
+        alert('An error occurred while deleting the shipment.')
       }
     }
-  };
+  }
 
   const handleEditClick = (trackingNumber) => {
-    setEditMode(trackingNumber);
-  };
+    setEditMode(trackingNumber)
+  }
 
   return (
     <div id="shipment-history">
@@ -86,7 +86,9 @@ const ShipmentHistory = () => {
                         {editMode === entry.trackingNumber ? (
                           <button onClick={() => handleDelete(entry.trackingNumber)}>Delete</button>
                         ) : (
-                          <button onClick={() => handleEditClick(entry.trackingNumber)}>Edit</button>
+                          <button onClick={() => handleEditClick(entry.trackingNumber)}>
+                            Edit
+                          </button>
                         )}
                       </>
                     ) : (
@@ -104,7 +106,7 @@ const ShipmentHistory = () => {
         </table>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default ShipmentHistory;
+export default ShipmentHistory

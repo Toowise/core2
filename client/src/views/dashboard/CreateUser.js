@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useStateContext } from '../../context/contextProvider';
+import React, { useState } from 'react'
+import axios from 'axios'
+import { useStateContext } from '../../context/contextProvider'
 
 const CreateUserForm = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [userRole, setRole] = useState('user');
-  const [error, setError] = useState(null);
-  const { user } = useStateContext();  
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [userRole, setRole] = useState('user')
+  const [error, setError] = useState(null)
+  const { user } = useStateContext()
 
   const handleCreateUser = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
       const response = await axios.post('http://localhost:5000/createUser', {
         username,
         password,
         userRole,
-      });
-      alert('User created successfully');
+      })
+      alert('User created successfully')
     } catch (error) {
-      console.error('Failed to create user:', error);
-      setError('Failed to create user');
+      console.error('Failed to create user:', error)
+      setError('Failed to create user')
     }
-  };
+  }
 
   if (user.userRole !== 'admin') {
     return (
@@ -33,7 +33,7 @@ const CreateUserForm = () => {
           <p>You do not have permission to access this page.</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -59,12 +59,12 @@ const CreateUserForm = () => {
           <select value={userRole} onChange={(e) => setRole(e.target.value)}>
             <option value="user">User</option>
             <option value="admin">Admin</option>
-          </select> 
+          </select>
           <button type="submit">Create User</button>
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CreateUserForm;
+export default CreateUserForm

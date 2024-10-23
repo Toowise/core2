@@ -60,7 +60,6 @@ const WidgetsBrand = (props) => {
               />
             ),
           })}
-          
         />
       </CCol>
       <CCol sm={6} xl={4} xxl={3}>
@@ -113,7 +112,6 @@ const WidgetsBrand = (props) => {
               />
             ),
           })}
-          
         />
       </CCol>
       <CCol sm={6} xl={4} xxl={3}>
@@ -141,7 +139,6 @@ const WidgetsBrand = (props) => {
               />
             ),
           })}
-          
         />
       </CCol>
     </CRow>

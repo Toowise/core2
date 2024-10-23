@@ -1,37 +1,37 @@
-import React, { Suspense, useEffect, useState } from 'react';
-import { HashRouter, Route, Routes, Navigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import 'leaflet/dist/leaflet.css';
-import { CSpinner, useColorModes } from '@coreui/react';
-import './scss/style.scss';
-import { useStateContext } from './context/contextProvider';
+import React, { Suspense, useEffect, useState } from 'react'
+import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import 'leaflet/dist/leaflet.css'
+import { CSpinner, useColorModes } from '@coreui/react'
+import './scss/style.scss'
+import { useStateContext } from './context/contextProvider'
 
-const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'));
-const Login = React.lazy(() => import('./views/pages/login/Login'));
-const Register = React.lazy(() => import('./views/pages/register/Register'));
-const Page404 = React.lazy(() => import('./views/pages/page404/Page404'));
-const Page500 = React.lazy(() => import('./views/pages/page500/Page500'));
+const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
+const Login = React.lazy(() => import('./views/pages/login/Login'))
+const Register = React.lazy(() => import('./views/pages/register/Register'))
+const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
+const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 
 const App = () => {
-  const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme');
-  const storedTheme = useSelector((state) => state.theme);
+  const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const storedTheme = useSelector((state) => state.theme)
 
-  const { user } = useStateContext();
-  const isAuthenticated = user !== null;
+  const { user } = useStateContext()
+  const isAuthenticated = user !== null
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.href.split('?')[1]);
-    const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0];
+    const urlParams = new URLSearchParams(window.location.href.split('?')[1])
+    const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
     if (theme) {
-      setColorMode(theme);
+      setColorMode(theme)
     }
 
     if (isColorModeSet()) {
-      return;
+      return
     }
 
-    setColorMode(storedTheme);
-  }, [isColorModeSet, setColorMode, storedTheme]);
+    setColorMode(storedTheme)
+  }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
     <HashRouter>
@@ -60,11 +60,15 @@ const App = () => {
           <Route path="/500" element={<Page500 />} />
 
           {/* Fallback route */}
-          <Route path="*" name="Home" element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />} />
+          <Route
+            path="*"
+            name="Home"
+            element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
+          />
         </Routes>
       </Suspense>
     </HashRouter>
-  );
+  )
 }
 
-export default App;
+export default App

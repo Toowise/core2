@@ -1,54 +1,52 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useStateContext } from '../../../context/contextProvider';
+import React, { useState } from 'react'
+import axios from 'axios'
+import { useStateContext } from '../../../context/contextProvider'
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(null)
 
-  const { setUser } = useStateContext();
+  const { setUser } = useStateContext()
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-  
+    e.preventDefault()
+
     try {
-      const response = await axios.post('http://localhost:5000/login', { username, password });
-      console.log('Login response:', response.data); 
-      
-      const { token, user } = response.data;
-  
+      const response = await axios.post('http://localhost:5000/login', { username, password })
+      console.log('Login response:', response.data)
+
+      const { token, user } = response.data
+
       if (token) {
-  
-        sessionStorage.setItem('token', token);
-  
+        sessionStorage.setItem('token', token)
+
         const loggedInUser = {
           username: user.username,
-          userRole: user.userRole 
-        };
-  
-        setUser(loggedInUser);
+          userRole: user.userRole,
+        }
+
+        setUser(loggedInUser)
       } else {
-        setError('Invalid credentials');
+        setError('Invalid credentials')
       }
     } catch (err) {
-      setError('Login failed. Please try again.');
-      console.error(err);
+      setError('Login failed. Please try again.')
+      console.error(err)
     }
-  };
-  
+  }
 
   return (
     <div className="login-container">
       <div className="login-card">
         <h2>Login</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>} 
+        {error && <p style={{ color: 'red' }}>{error}</p>}
         <form onSubmit={handleLogin}>
           <input
             type="text"
             placeholder="Username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)} 
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
           <input
@@ -58,11 +56,11 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <button type="submit">Login</button> 
+          <button type="submit">Login</button>
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

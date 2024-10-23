@@ -108,8 +108,6 @@ const Typography = () => {
       </CCard>
       <CCard className="mb-4">
         <div className="card-header">Display headings</div>
-        
-      
       </CCard>
       <CCard className="mb-4">
         <CCardHeader>Inline text elements</CCardHeader>

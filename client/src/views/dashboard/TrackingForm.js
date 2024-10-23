@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import axios from 'axios';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import ShipmentInfo from './ShipmentInfo';
-import Modal from './Modal';
-import { useStateContext } from '../../context/contextProvider';
+import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+import axios from 'axios'
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import ShipmentInfo from './ShipmentInfo'
+import Modal from './Modal'
+import { useStateContext } from '../../context/contextProvider'
 
 const TrackingForm = () => {
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [shipmentData, setShipmentData] = useState(null);
-  const [carrier, setCarrier] = useState('');
-  const [contact, setContact] = useState('');
-  const [zoom, setZoom] = useState(13);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [shipmentData, setShipmentData] = useState(null)
+  const [carrier, setCarrier] = useState('')
+  const [contact, setContact] = useState('')
+  const [zoom, setZoom] = useState(13)
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const { user } = useStateContext();
+  const { user } = useStateContext()
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!trackingNumber) {
-      alert('Please enter a tracking number.');
-      return;
+      alert('Please enter a tracking number.')
+      return
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/track', { trackingNumber });
-      const data = response.data;
+      const response = await axios.post('http://localhost:5000/track', { trackingNumber })
+      const data = response.data
 
       if (data.status === 'error') {
-        alert(data.message);
-        return;
+        alert(data.message)
+        return
       }
 
       setShipmentData({
@@ -40,20 +40,20 @@ const TrackingForm = () => {
         longitude: Number(data.longitude),
         updated_at: new Date(data.updated_at),
         expected_delivery: new Date(data.expected_delivery),
-      });
-      setCarrier(data.carrier);
-      setContact(data.contact);
+      })
+      setCarrier(data.carrier)
+      setContact(data.contact)
     } catch (error) {
-      console.error('Error fetching shipment data:', error);
-      alert('An error occurred while fetching shipment data. Please try again later.');
+      console.error('Error fetching shipment data:', error)
+      alert('An error occurred while fetching shipment data. Please try again later.')
     }
-  };
+  }
 
   const handleUpdate = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!shipmentData) {
-      alert('No shipment data to update.');
-      return;
+      alert('No shipment data to update.')
+      return
     }
 
     try {
@@ -61,36 +61,36 @@ const TrackingForm = () => {
         trackingNumber,
         carrier,
         contact,
-      });
+      })
 
       if (response.data) {
-        setShipmentData({ ...shipmentData, carrier, contact });
-        alert('Carrier and contact information updated successfully!');
-        setIsEditMode(false);
-        setIsModalOpen(false);
+        setShipmentData({ ...shipmentData, carrier, contact })
+        alert('Carrier and contact information updated successfully!')
+        setIsEditMode(false)
+        setIsModalOpen(false)
       }
     } catch (error) {
-      console.error('Error updating shipment data:', error);
-      alert('An error occurred while updating shipment data. Please try again later.');
+      console.error('Error updating shipment data:', error)
+      alert('An error occurred while updating shipment data. Please try again later.')
     }
-  };
+  }
 
   const handleCancel = () => {
-    setIsEditMode(false);
-    setIsModalOpen(false);
-    setCarrier(shipmentData?.carrier || '');
-    setContact(shipmentData?.contact || '');
-  };
+    setIsEditMode(false)
+    setIsModalOpen(false)
+    setCarrier(shipmentData?.carrier || '')
+    setContact(shipmentData?.contact || '')
+  }
 
   const toggleEditMode = () => {
-    setIsEditMode(!isEditMode);
-    setIsModalOpen(true);
-  };
+    setIsEditMode(!isEditMode)
+    setIsModalOpen(true)
+  }
 
   const renderMap = () => {
-    if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null;
+    if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
 
-    const { latitude, longitude } = shipmentData;
+    const { latitude, longitude } = shipmentData
 
     return (
       <MapContainer
@@ -103,8 +103,8 @@ const TrackingForm = () => {
         <Marker position={[latitude, longitude]} />
         <MapCenterUpdater lat={latitude} lng={longitude} />
       </MapContainer>
-    );
-  };
+    )
+  }
 
   return (
     <div>
@@ -148,26 +148,28 @@ const TrackingForm = () => {
             />
           </div>
           <button type="submit">Update Carrier Info</button>
-          <button type="button" onClick={handleCancel}>Cancel</button>
+          <button type="button" onClick={handleCancel}>
+            Cancel
+          </button>
         </form>
       </Modal>
     </div>
-  );
-};
+  )
+}
 
 const MapCenterUpdater = ({ lat, lng }) => {
-  const map = useMap();
+  const map = useMap()
 
   useEffect(() => {
-    map.setView([lat, lng], map.getZoom());
-  }, [lat, lng, map]);
+    map.setView([lat, lng], map.getZoom())
+  }, [lat, lng, map])
 
-  return null;
-};
+  return null
+}
 
 MapCenterUpdater.propTypes = {
   lat: PropTypes.number.isRequired,
   lng: PropTypes.number.isRequired,
-};
+}
 
-export default TrackingForm;
+export default TrackingForm

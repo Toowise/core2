@@ -1,35 +1,15 @@
 import React from 'react'
 import classNames from 'classnames'
 
-import {
-
-  CButton,
-  CButtonGroup,
-  CCard,
-  CCardBody,
-  CCardFooter,
- 
-  CCol,
-  
-  CRow,
- 
-} from '@coreui/react'
+import { CButton, CButtonGroup, CCard, CCardBody, CCardFooter, CCol, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  
-  cilCloudDownload,
- 
-} from '@coreui/icons'
-
-
+import { cilCloudDownload } from '@coreui/icons'
 
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 
 const Dashboard = () => {
-  
-
   return (
     <>
       <WidgetsDropdown className="mb-4" />
@@ -69,13 +49,10 @@ const Dashboard = () => {
             lg={{ cols: 4 }}
             xl={{ cols: 5 }}
             className="mb-2 text-center"
-          >
-           
-          </CRow>
+          ></CRow>
         </CCardFooter>
       </CCard>
       <WidgetsBrand className="mb-4" withCharts />
-      
     </>
   )
 }
