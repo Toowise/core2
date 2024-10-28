@@ -26,7 +26,7 @@ const TrackingForm = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/track', { trackingNumber })
+      const response = await axios.post('http://localhost:5052/track', { trackingNumber })
       const data = response.data
 
       if (data.status === 'error') {
@@ -57,7 +57,7 @@ const TrackingForm = () => {
     }
 
     try {
-      const response = await axios.put('http://localhost:5000/shipments/update', {
+      const response = await axios.put('http://localhost:5052/shipments/update', {
         trackingNumber,
         carrier,
         contact,

@@ -11,7 +11,7 @@ const ShipmentHistory = () => {
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/history')
+        const response = await axios.get('http://localhost:5052/history')
         const data = response.data
 
         if (data.status === 'success') {

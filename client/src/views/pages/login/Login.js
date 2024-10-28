@@ -13,7 +13,7 @@ const Login = () => {
     e.preventDefault()
 
     try {
-      const response = await axios.post('http://localhost:5000/login', { username, password })
+      const response = await axios.post('http://localhost:5052/login', { username, password })
       console.log('Login response:', response.data)
 
       const { token, user } = response.data

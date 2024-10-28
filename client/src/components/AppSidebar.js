@@ -8,8 +8,8 @@ import {
   CSidebarFooter,
   CSidebarHeader,
   CSidebarToggler,
-  CButton, // Add CButton for Logout
-  CModal, // Add CModal for logout confirmation
+  CButton, 
+  CModal,
   CModalHeader,
   CModalTitle,
   CModalBody,
