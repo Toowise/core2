@@ -11,6 +11,15 @@ body {
   padding-bottom: 60px;
 }
 
+.brand-full {
+  width: 100px; 
+  height: auto; 
+  max-height: 60px;
+  padding: 10px; 
+  object-fit: contain;
+}
+
+
 .container-fluid {
   width: 100%;
 }
@@ -21,8 +30,8 @@ h2 {
 }
 
 h1 {
-  background-color: #f32d17;
-  color: white;
+  background-color: white;
+  color: rgb(35, 35, 35);
   padding: 20px;
 }
 
@@ -151,49 +160,7 @@ button:hover {
 #history-table tr:hover {
   background-color: #00e1fffa;
 }
-/* Login.css */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Full viewport height */
-  background-color: #f5f5f5;
-}
 
-.login-card {
-  background: white;
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  text-align: center;
-}
-
-.login-card h2 {
-  margin-bottom: 20px;
-}
-
-.login-card input {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.login-card button {
-  width: 100%;
-  padding: 10px;
-  background-color: #f32d17;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.login-card button:hover {
-  background-color: #e22b16;
-}
 .logout-container {
   position: absolute;
   top: 10px;

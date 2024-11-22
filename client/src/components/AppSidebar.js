@@ -15,12 +15,11 @@ import {
   CModalBody,
   CModalFooter,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
+
 
 import { AppSidebarNav } from './AppSidebarNav'
+import logoImage from 'src/assets/brand/logo.png'
 
-import { logo } from 'src/assets/brand/logo'
-import { sygnet } from 'src/assets/brand/sygnet'
 
 // sidebar nav config
 import navigation from '../_nav'
@@ -30,26 +29,24 @@ const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
-
-  const { setUser } = useStateContext() // Access the setUser from context to log out
-
-  const [showModal, setShowModal] = useState(false) // State for the logout modal
+  const { setUser } = useStateContext() 
+  const [showModal, setShowModal] = useState(false) 
 
   // Function to handle logout
   const handleLogout = () => {
-    sessionStorage.removeItem('token') // Remove token from session storage
-    setUser(null) // Clear user state (logout)
-    window.location.href = '/login' // Redirect to login page
+    sessionStorage.removeItem('token') 
+    setUser(null) 
+    window.location.href = '/login'
   }
 
   // Function to show the confirmation modal
   const confirmLogout = () => {
-    setShowModal(true) // Open the modal
+    setShowModal(true) 
   }
 
   // Function to close the modal
   const closeModal = () => {
-    setShowModal(false) // Close the modal
+    setShowModal(false)
   }
 
   return (
@@ -63,17 +60,16 @@ const AppSidebar = () => {
         dispatch({ type: 'set', sidebarShow: visible })
       }}
     >
-      <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/">
-          <CIcon customClassName="  brand-full" icon={logo} height={32} />
-          <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
-        </CSidebarBrand>
-        <CCloseButton
-          className="d-lg-none"
-          dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
-        />
-      </CSidebarHeader>
+    <CSidebarHeader className="border-bottom">
+      <CSidebarBrand to="/">
+        <img src={logoImage} alt="Logo" className="brand-full" height={32} />
+      </CSidebarBrand>
+     <CCloseButton
+        className="d-lg-none"
+        dark
+        onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+      />
+  </CSidebarHeader>
 
       {/* Sidebar navigation */}
       <AppSidebarNav items={navigation} />
@@ -83,7 +79,7 @@ const AppSidebar = () => {
         <CButton
           color="danger"
           className="w-100"
-          onClick={confirmLogout} // Trigger the logout confirmation
+          onClick={confirmLogout} 
         >
           Logout
         </CButton>

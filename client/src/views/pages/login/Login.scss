@@ -1,0 +1,108 @@
+/* Login.scss */
+body {
+  background-color: #f8f9fa; /* Light gray background */
+  font-family: 'Roboto', sans-serif; /* Clean, modern font */
+}
+
+.bg-body-tertiary {
+  background-color: #f8f9fa; /* Matches body background */
+}
+
+.card {
+  border-radius: 8px; /* Smooth rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+h1 {
+  font-size: 40px;
+  font-weight: 700;
+  color: #2c2c2c; /* Dark gray for header */
+  margin-bottom: 8px;
+}
+
+.text-body-secondary {
+  font-size: 16px;
+  color: #6c757d; /* Muted text for subtitle */
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group-text {
+  background-color: #ffffff; /* White background for icons */
+  border-right: 0; /* Seamless border integration */
+}
+
+.form-control {
+  border-left: 0; /* Seamless border integration */
+  border: 1px solid #ced4da; /* Subtle border for inputs */
+  padding: 12px;
+  border-radius: 4px;
+}
+
+button {
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+button[type="submit"] {
+  background-color: #5856d6; /* Vibrant purple button */
+  color: #ffffff;
+  border: none;
+}
+
+button[type="submit"]:hover {
+  background-color:  #4745aa; /* Darker purple for hover state */
+}
+
+button:disabled {
+  background-color: #e8e8e8; /* Disabled state */
+  color: #a0a0a0;
+  border: 1px solid #e0e0e0;
+}
+
+.text-primary {
+  color: #6f42c1; /* Matching purple for links */
+  text-decoration: none;
+}
+
+.text-primary:hover {
+  text-decoration: underline; /* Underline for hover effect */
+}
+
+.small {
+  color: #6c757d; /* Muted gray text for policy/terms */
+}
+
+a {
+  cursor: pointer;
+}
+
+a:hover {
+  color: #5a32a3; /* Darker purple for hover */
+}
+
+button + button {
+  margin-left: 8px; /* Spacing between buttons */
+}
+
+.card-footer {
+  background-color: transparent;
+  border: none;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 10;
+}
