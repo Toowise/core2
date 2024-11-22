@@ -1,11 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilHistory,
-  cilLocationPin,
-  cilSpreadsheet,
-  cilUser,
-} from '@coreui/icons'
+import { cilHistory, cilLocationPin, cilSpreadsheet, cilUser } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
 const _nav = [
@@ -16,7 +11,6 @@ const _nav = [
     icon: <CIcon icon={cilSpreadsheet} customClassName="nav-icon" />,
     badge: {
       color: 'info',
-      
     },
   },
   {
@@ -26,7 +20,6 @@ const _nav = [
     icon: <CIcon icon={cilLocationPin} customClassName="nav-icon" />,
     badge: {
       color: 'info',
-     
     },
   },
   {
@@ -36,7 +29,6 @@ const _nav = [
     icon: <CIcon icon={cilHistory} customClassName="nav-icon" />,
     badge: {
       color: 'info',
-      
     },
   },
   {
@@ -46,7 +38,6 @@ const _nav = [
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
     badge: {
       color: 'info',
-     
     },
   },
 ]

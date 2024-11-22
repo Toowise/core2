@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useStateContext } from '../../../context/contextProvider';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons';
+import React, { useState } from 'react'
+import axios from 'axios'
+import { useStateContext } from '../../../context/contextProvider'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
 import {
   CContainer,
   CRow,
@@ -18,48 +18,48 @@ import {
   CButtonGroup,
   CTooltip,
   CSpinner,
-} from '@coreui/react';
-import './Login.scss';
+} from '@coreui/react'
+import './Login.scss'
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { setUser } = useStateContext();
+  const { setUser } = useStateContext()
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setErrorMessage(null);
+    e.preventDefault()
+    setIsLoading(true)
+    setErrorMessage(null)
 
     try {
-      const response = await axios.post('http://localhost:5052/login', { username, password });
-      console.log('Login response:', response.data);
+      const response = await axios.post('http://localhost:5052/login', { username, password })
+      console.log('Login response:', response.data)
 
-      const { token, user } = response.data;
+      const { token, user } = response.data
 
       if (token) {
-        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('token', token)
 
         const loggedInUser = {
           username: user.username,
           userRole: user.userRole,
-        };
+        }
 
-        setUser(loggedInUser);
+        setUser(loggedInUser)
       } else {
-        setErrorMessage('Invalid credentials');
+        setErrorMessage('Invalid credentials')
       }
     } catch (err) {
-      setErrorMessage('Login failed. Please try again.');
-      console.error(err);
+      setErrorMessage('Login failed. Please try again.')
+      console.error(err)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
@@ -121,15 +121,26 @@ const Login = () => {
                   <p>
                     <small>
                       By continuing, you agree to our
-                      <a href="/policy" className="text-primary"> Privacy Policy </a>
+                      <a href="/policy" className="text-primary">
+                        {' '}
+                        Privacy Policy{' '}
+                      </a>
                       and
-                      <a href="/terms" className="text-primary"> Terms of Service</a>.
+                      <a href="/terms" className="text-primary">
+                        {' '}
+                        Terms of Service
+                      </a>
+                      .
                     </small>
                   </p>
                   <div className="d-grid mb-3">
                     <CButtonGroup>
-                      <CButton type="submit" color="primary" className="rounded">Login</CButton>
-                      <CButton color="outline-primary" className="rounded" disabled>Signup</CButton>
+                      <CButton type="submit" color="primary" className="rounded">
+                        Login
+                      </CButton>
+                      <CButton color="outline-primary" className="rounded" disabled>
+                        Signup
+                      </CButton>
                     </CButtonGroup>
                   </div>
                   <CButton
@@ -146,7 +157,7 @@ const Login = () => {
         </CRow>
       </CContainer>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

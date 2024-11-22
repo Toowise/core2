@@ -8,7 +8,7 @@ import {
   CSidebarFooter,
   CSidebarHeader,
   CSidebarToggler,
-  CButton, 
+  CButton,
   CModal,
   CModalHeader,
   CModalTitle,
@@ -16,10 +16,8 @@ import {
   CModalFooter,
 } from '@coreui/react'
 
-
 import { AppSidebarNav } from './AppSidebarNav'
 import logoImage from 'src/assets/brand/logo.png'
-
 
 // sidebar nav config
 import navigation from '../_nav'
@@ -29,19 +27,19 @@ const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
-  const { setUser } = useStateContext() 
-  const [showModal, setShowModal] = useState(false) 
+  const { setUser } = useStateContext()
+  const [showModal, setShowModal] = useState(false)
 
   // Function to handle logout
   const handleLogout = () => {
-    sessionStorage.removeItem('token') 
-    setUser(null) 
+    sessionStorage.removeItem('token')
+    setUser(null)
     window.location.href = '/login'
   }
 
   // Function to show the confirmation modal
   const confirmLogout = () => {
-    setShowModal(true) 
+    setShowModal(true)
   }
 
   // Function to close the modal
@@ -60,27 +58,23 @@ const AppSidebar = () => {
         dispatch({ type: 'set', sidebarShow: visible })
       }}
     >
-    <CSidebarHeader className="border-bottom">
-      <CSidebarBrand to="/">
-        <img src={logoImage} alt="Logo" className="brand-full" height={32} />
-      </CSidebarBrand>
-     <CCloseButton
-        className="d-lg-none"
-        dark
-        onClick={() => dispatch({ type: 'set', sidebarShow: false })}
-      />
-  </CSidebarHeader>
+      <CSidebarHeader className="border-bottom">
+        <CSidebarBrand to="/">
+          <img src={logoImage} alt="Logo" className="brand-full" height={32} />
+        </CSidebarBrand>
+        <CCloseButton
+          className="d-lg-none"
+          dark
+          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+        />
+      </CSidebarHeader>
 
       {/* Sidebar navigation */}
       <AppSidebarNav items={navigation} />
 
       {/* Sidebar footer */}
       <CSidebarFooter className="border-top d-none d-lg-flex">
-        <CButton
-          color="danger"
-          className="w-100"
-          onClick={confirmLogout} 
-        >
+        <CButton color="danger" className="w-100" onClick={confirmLogout}>
           Logout
         </CButton>
         <CSidebarToggler
