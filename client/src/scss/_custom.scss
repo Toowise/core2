@@ -5,6 +5,10 @@
   box-sizing: border-box;
 }
 
+*{
+  outline: 1px black solid;
+}
+
 body {
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
@@ -12,11 +16,8 @@ body {
 }
 
 .brand-full {
-  width: 100%; 
-  height: auto; 
-  max-height: 60px;
-  padding: 10px; 
-  object-fit: contain;
+  width: 100%;
+  background-color: white;
 }
 
 

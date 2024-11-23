@@ -60,7 +60,7 @@ const AppSidebar = () => {
     >
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/">
-          <img src={logoImage} alt="Logo" className="brand-full" height={32} />
+          <img src={logoImage} alt="Logo" className="brand-full" height={64} />
         </CSidebarBrand>
         <CCloseButton
           className="d-lg-none"
