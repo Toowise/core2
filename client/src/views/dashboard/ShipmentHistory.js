@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import axios from '../../api/axios'
 import { ring } from 'ldrs'
 ring.register()
 import { useStateContext } from '../../context/contextProvider'
@@ -11,7 +11,7 @@ const ShipmentHistory = () => {
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('http://localhost:5052/history')
+        const response = await axios.get('/history')
         const data = response.data
 
         if (data.status === 'success') {
@@ -33,7 +33,7 @@ const ShipmentHistory = () => {
   const handleDelete = async (trackingNumber) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
       try {
-        const response = await axios.delete(`http://localhost:5000/track/${trackingNumber}`)
+        const response = await axios.delete(`/track/${trackingNumber}`)
 
         if (response.data.status === 'success') {
           setShipmentHistory((prevHistory) =>

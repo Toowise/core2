@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import axios from 'axios'
+import axios from '../../api/axios'
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from './ShipmentInfo'
@@ -26,7 +26,7 @@ const TrackingForm = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:5052/track', { trackingNumber })
+      const response = await axios.post('/track', { trackingNumber })
       const data = response.data
 
       if (data.status === 'error') {
@@ -57,7 +57,7 @@ const TrackingForm = () => {
     }
 
     try {
-      const response = await axios.put('http://localhost:5052/shipments/update', {
+      const response = await axios.put('/shipments/update', {
         trackingNumber,
         carrier,
         contact,

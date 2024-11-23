@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import axios from '../../api/axios'
 import { useStateContext } from '../../context/contextProvider'
 
 const CreateUserForm = () => {
@@ -13,7 +13,7 @@ const CreateUserForm = () => {
     e.preventDefault()
 
     try {
-      const response = await axios.post('http://localhost:5052/createUser', {
+      const response = await axios.post('/createUser', {
         username,
         password,
         userRole,

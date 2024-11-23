@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import axios from '../../../api/axios'
 import { useStateContext } from '../../../context/contextProvider'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
@@ -36,7 +36,7 @@ const Login = () => {
     setErrorMessage(null)
 
     try {
-      const response = await axios.post('backend-core2.axleshift.com/login', { username, password })
+      const response = await axios.post('/login', { username, password })
       console.log('Login response:', response.data)
 
       const { token, user } = response.data
