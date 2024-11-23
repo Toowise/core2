@@ -36,7 +36,7 @@ const Login = () => {
     setErrorMessage(null)
 
     try {
-      const response = await axios.post('http://localhost:5052/login', { username, password })
+      const response = await axios.post('backend-core2.axleshift.com/login', { username, password })
       console.log('Login response:', response.data)
 
       const { token, user } = response.data
