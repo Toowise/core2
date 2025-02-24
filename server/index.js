@@ -188,7 +188,7 @@ app.put('/shipments/update', async (req, res) => {
   }
 });
 
-app.get('/history', async (_req, res) => {
+app.get('/history', async (req, res) => {
   try {
     const shippedData = await TrackData.find();
     if (shippedData.length > 0) {

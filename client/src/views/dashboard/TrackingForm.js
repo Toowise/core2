@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import axios from '../../api/axios'
-import 'leaflet/dist/leaflet.css'
+import 'leaflet/dist/leaflet.css'   
 import ShipmentInfo from './ShipmentInfo'
 import Modal from './Modal'
 import { useStateContext } from '../../context/contextProvider'
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api"
+import {VITE_APP_GOOGLE_MAP} from '../../config'
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
@@ -110,7 +111,7 @@ const TrackingForm = () => {
     const { latitude, longitude } = shipmentData
   
     return (
-      <LoadScript googleMapsApiKey="AIzaSyBriBMFdNDzfUx3CVzOp-m-CyXEKf73phE">
+      <LoadScript googleMapsApiKey = {VITE_APP_GOOGLE_MAP}>
         <GoogleMap
           mapContainerStyle={{ height: "300px", width: "100%" }}
           center={{ lat: latitude, lng: longitude }}
