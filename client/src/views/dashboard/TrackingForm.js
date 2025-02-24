@@ -1,11 +1,27 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import axios from '../../api/axios'
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from './ShipmentInfo'
 import Modal from './Modal'
 import { useStateContext } from '../../context/contextProvider'
+import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api"
+
+const MapCenterUpdater = ({ lat, lng, map }) => {
+  useEffect(() => {
+    if (map && lat && lng) {
+      map.panTo({ lat, lng }) 
+    }
+  }, [lat, lng, map])
+
+  return null
+}
+
+MapCenterUpdater.propTypes = {
+  lat: PropTypes.number.isRequired,
+  lng: PropTypes.number.isRequired,
+  map: PropTypes.object,
+}
 
 const TrackingForm = () => {
   const [trackingNumber, setTrackingNumber] = useState('')
@@ -15,6 +31,7 @@ const TrackingForm = () => {
   const [zoom, setZoom] = useState(13)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [mapInstance, setMapInstance] = useState(null) 
 
   const { user } = useStateContext()
 
@@ -89,20 +106,21 @@ const TrackingForm = () => {
 
   const renderMap = () => {
     if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
-
+  
     const { latitude, longitude } = shipmentData
-
+  
     return (
-      <MapContainer
-        center={[latitude, longitude]}
-        zoom={zoom}
-        className="border-card overflow-hidden mt-4 w-full"
-        style={{ height: '300px' }}
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <Marker position={[latitude, longitude]} />
-        <MapCenterUpdater lat={latitude} lng={longitude} />
-      </MapContainer>
+      <LoadScript googleMapsApiKey="AIzaSyBriBMFdNDzfUx3CVzOp-m-CyXEKf73phE">
+        <GoogleMap
+          mapContainerStyle={{ height: "300px", width: "100%" }}
+          center={{ lat: latitude, lng: longitude }}
+          zoom={zoom}
+          onLoad={(map) => setMapInstance(map)} 
+        >
+          <Marker position={{ lat: latitude, lng: longitude }} />
+          {mapInstance && <MapCenterUpdater lat={latitude} lng={longitude} map={mapInstance} />}
+        </GoogleMap>
+      </LoadScript>
     )
   }
 
@@ -155,21 +173,6 @@ const TrackingForm = () => {
       </Modal>
     </div>
   )
-}
-
-const MapCenterUpdater = ({ lat, lng }) => {
-  const map = useMap()
-
-  useEffect(() => {
-    map.setView([lat, lng], map.getZoom())
-  }, [lat, lng, map])
-
-  return null
-}
-
-MapCenterUpdater.propTypes = {
-  lat: PropTypes.number.isRequired,
-  lng: PropTypes.number.isRequired,
 }
 
 export default TrackingForm
