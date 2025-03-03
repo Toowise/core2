@@ -45,9 +45,7 @@ const WidgetsDropdown = (props) => {
           value={
             <>
               {' '}
-              <span className="fs-6 fw-normal">
-                
-              </span>
+              <span className="fs-6 fw-normal"></span>
             </>
           }
           title="Status"
@@ -135,9 +133,7 @@ const WidgetsDropdown = (props) => {
           value={
             <>
               {' '}
-              <span className="fs-6 fw-normal">
-               
-              </span>
+              <span className="fs-6 fw-normal"></span>
             </>
           }
           title="Kahit ano"
@@ -223,10 +219,8 @@ const WidgetsDropdown = (props) => {
           color="warning"
           value={
             <>
-             {' '}
-              <span className="fs-6 fw-normal">
-                
-              </span>
+              {' '}
+              <span className="fs-6 fw-normal"></span>
             </>
           }
           title="Shipment "
@@ -296,9 +290,7 @@ const WidgetsDropdown = (props) => {
           value={
             <>
               {' '}
-              <span className="fs-6 fw-normal">
-                
-              </span>
+              <span className="fs-6 fw-normal"></span>
             </>
           }
           title="Mema "

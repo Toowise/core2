@@ -1,26 +1,12 @@
 import React from 'react'
 
-
-import {
-
-  CButton,
-  CButtonGroup,
-  CCard,
-  CCardBody,
-  CCol,
-  CRow,
-} from '@coreui/react'
+import { CButton, CButtonGroup, CCard, CCardBody, CCol, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  
-  cilCloudDownload,
- 
-} from '@coreui/icons'
+import { cilCloudDownload } from '@coreui/icons'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 
 const Dashboard = () => {
-  
   return (
     <>
       <WidgetsDropdown className="mb-4" />
@@ -53,9 +39,7 @@ const Dashboard = () => {
           </CRow>
           <MainChart />
         </CCardBody>
-        
       </CCard>
-      
     </>
   )
 }

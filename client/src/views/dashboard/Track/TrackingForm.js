@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import axios from '/src/api/axios.js'
-import 'leaflet/dist/leaflet.css'   
+import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
 import Modal from '../Modal.js'
 import { useStateContext } from '../../../context/contextProvider.js'
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api"
-import {VITE_APP_GOOGLE_MAP} from '../../../config.js'
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+import { VITE_APP_GOOGLE_MAP } from '../../../config.js'
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
     if (map && lat && lng) {
-      map.panTo({ lat, lng }) 
+      map.panTo({ lat, lng })
     }
   }, [lat, lng, map])
 
@@ -32,7 +32,7 @@ const TrackingForm = () => {
   const [zoom] = useState(13)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [mapInstance, setMapInstance] = useState(null) 
+  const [mapInstance, setMapInstance] = useState(null)
 
   const { user } = useStateContext()
 
@@ -107,16 +107,16 @@ const TrackingForm = () => {
 
   const renderMap = () => {
     if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
-  
+
     const { latitude, longitude } = shipmentData
-  
+
     return (
-      <LoadScript googleMapsApiKey = {VITE_APP_GOOGLE_MAP}>
+      <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
         <GoogleMap
-          mapContainerStyle={{ height: "300px", width: "100%" }}
+          mapContainerStyle={{ height: '300px', width: '100%' }}
           center={{ lat: latitude, lng: longitude }}
           zoom={zoom}
-          onLoad={(map) => setMapInstance(map)} 
+          onLoad={(map) => setMapInstance(map)}
         >
           <Marker position={{ lat: latitude, lng: longitude }} />
           {mapInstance && <MapCenterUpdater lat={latitude} lng={longitude} map={mapInstance} />}
@@ -134,7 +134,7 @@ const TrackingForm = () => {
           onChange={(e) => setTrackingNumber(e.target.value)}
           placeholder="Enter tracking number"
         />
-        <div className='track-btn'>
+        <div className="track-btn">
           <button type="submit">Track</button>
         </div>
       </form>
