@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import axios from '../../api/axios'
+import axios from '/src/api/axios.js'
 import { ring } from 'ldrs'
 ring.register()
-import { useStateContext } from '../../context/contextProvider'
+import { useStateContext } from '../../../context/contextProvider'
 const ShipmentHistory = () => {
   const [shipmentHistory, setShipmentHistory] = useState([])
   const [loading, setLoading] = useState(true)

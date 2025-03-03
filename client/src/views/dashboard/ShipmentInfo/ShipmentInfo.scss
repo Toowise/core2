@@ -1,0 +1,134 @@
+/* Container */
+.shipment-container {
+    width: 100%;
+    max-width: 450px;
+    margin: auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header */
+  .header {
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+  }
+  
+  .status {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff8800;
+  }
+  
+  .package-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .package-img {
+    width: 50px;
+    height: 50px;
+    background-color: #f3f3f3;
+    border-radius: 50%;
+    
+  }
+  
+  .carrier {
+    font-size: 14px;
+    font-weight: bold;
+  }
+  
+  .tracking-number {
+    font-size: 12px;
+    color: gray;
+  }
+  
+  /* Toggle Button */
+  .toggle-btn {
+    width: 100%;
+    margin-top: 15px;
+    padding: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background: #f32d17;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .toggle-btn:hover {
+    background: #e22b16;
+  }
+  
+  /* Timeline */
+  .timeline-container {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out;
+  }
+  
+  .show {
+    max-height: 1000px;
+    opacity: 1;
+  }
+  
+  /* Timeline Item */
+  .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  /* Status Indicator */
+  .status-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .circle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: gray;
+  }
+  
+  .circle.active {
+    background-color: #ff8800;
+  }
+  
+  .line {
+    width: 2px;
+    height: 30px;
+    background: lightgray;
+    margin-top: 5px;
+  }
+  
+  /* Status Details */
+  .status-details {
+    flex: 1;
+  }
+  
+  .status-text {
+    font-size: 14px;
+    color: black;
+  }
+  
+  .bold-text {
+    font-weight: bold;
+    color: #ff8800;
+  }
+  
+  .date-time {
+    font-size: 12px;
+    color: gray;
+  }
+  

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import axios from '../../api/axios'
+import axios from '/src/api/axios.js'
 import 'leaflet/dist/leaflet.css'   
-import ShipmentInfo from './ShipmentInfo'
-import Modal from './Modal'
-import { useStateContext } from '../../context/contextProvider'
+import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
+import Modal from '../Modal.js'
+import { useStateContext } from '../../../context/contextProvider.js'
 import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api"
-import {VITE_APP_GOOGLE_MAP} from '../../config'
+import {VITE_APP_GOOGLE_MAP} from '../../../config.js'
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
@@ -29,7 +29,7 @@ const TrackingForm = () => {
   const [shipmentData, setShipmentData] = useState(null)
   const [carrier, setCarrier] = useState('')
   const [contact, setContact] = useState('')
-  const [zoom, setZoom] = useState(13)
+  const [zoom] = useState(13)
   const [isEditMode, setIsEditMode] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [mapInstance, setMapInstance] = useState(null) 

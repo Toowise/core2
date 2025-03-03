@@ -1,8 +1,8 @@
 import React from 'react'
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const TrackingForm = React.lazy(() => import('./views/dashboard/TrackingForm'))
-const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory'))
+const TrackingForm = React.lazy(() => import('./views/dashboard/Track/TrackingForm'))
+const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory/ShipmentHistory'))
 const CreateUserForm = React.lazy(() => import('./views/dashboard/CreateUser'))
 // Buttons
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
