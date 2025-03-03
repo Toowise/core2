@@ -48,13 +48,13 @@ button {
   border-radius: 4px;
 }
 
-button[type="submit"] {
-  background-color: #5856d6; /* Vibrant purple button */
+.rounded {
+  background-color: #5856d6; 
   color: #ffffff;
   border: none;
 }
 
-button[type="submit"]:hover {
+.rounded:hover {
   background-color:  #4745aa; /* Darker purple for hover state */
 }
 

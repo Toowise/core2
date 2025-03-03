@@ -134,7 +134,9 @@ const TrackingForm = () => {
           onChange={(e) => setTrackingNumber(e.target.value)}
           placeholder="Enter tracking number"
         />
-        <button type="submit">Track</button>
+        <div className='track-btn'>
+          <button type="submit">Track</button>
+        </div>
       </form>
       {shipmentData && user?.userRole === 'admin' && (
         <div className="edit">

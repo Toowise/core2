@@ -97,6 +97,9 @@ h1 {
   width: 250px;
   max-width: 100%;
 }
+.track-btn {
+  background-color: red;
+}
 
 button {
   padding: 10px 20px;
@@ -150,7 +153,7 @@ button:hover {
 }
 
 #history-table th {
-  background-color: #da0000;
+  background-color: #f32d17;
   color: white;
 }
 
@@ -159,7 +162,7 @@ button:hover {
 }
 
 #history-table tr:hover {
-  background-color: #00e1fffa;
+  background-color: #f9fc33fa;
 }
 
 .logout-container {

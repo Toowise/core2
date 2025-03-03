@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion"; 
 import "./ShipmentInfo.scss"; 
 
 const ShipmentInfo = ({ data }) => {
@@ -22,55 +22,40 @@ const ShipmentInfo = ({ data }) => {
         </button>
       </div>
 
-      {/* Timeline */}
-      {showDetails && (
-        <div>
-          {data.events.map((event, index) => (
-            <div key={index}>
-              <div>
+      {/* Timeline with Smooth Animation */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            key="timeline"
+            initial={{ opacity: 0, y: -10 }}  // Start position (hidden & slightly above)
+            animate={{ opacity: 1, y: 0 }}   // Animate to visible state
+            exit={{ opacity: 0, y: -10 }}    // Exit animation (fade out & slide up)
+            transition={{ duration: 0.5, ease: "easeInOut" }} // Smooth effect
+            className="timeline-container show"
+          >
+            {data.events.map((event, index) => (
+              <div key={index} className="timeline-item">
                 {/* Status Indicator */}
-                <div>
-                  <div
-                    style={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: index === 0 ? "orange" : "gray",
-                    }}
-                  ></div>
-                  {index !== data.events.length - 1 && (
-                    <div
-                      style={{
-                        width: "2px",
-                        height: "32px",
-                        backgroundColor: "lightgray",
-                        marginLeft: "5px",
-                      }}
-                    ></div>
-                  )}
+                <div className="status-indicator">
+                  <div className={`circle ${index === 0 ? "active" : ""}`}></div>
+                  {index !== data.events.length - 1 && <div className="line"></div>}
                 </div>
 
                 {/* Status Details */}
-                <div>
-                  <p
-                    style={{
-                      fontWeight: index === 0 ? "bold" : "normal",
-                      color: index === 0 ? "orange" : "black",
-                    }}
-                  >
+                <div className="status-details">
+                  <p className={`status-text ${index === 0 ? "bold-text" : ""}`}>
                     {event.status}
                   </p>
-                  <p>{event.date} {event.time}</p>
+                  <p className="date-time">{event.date} {event.time}</p>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
 
 // Sample Data
 const TrackingData = {
