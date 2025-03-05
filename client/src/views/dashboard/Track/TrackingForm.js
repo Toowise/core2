@@ -33,7 +33,6 @@ const TrackingForm = () => {
   const [isEditMode, setIsEditMode] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [mapInstance, setMapInstance] = useState(null)
-
   const { user } = useStateContext()
 
   const handleSubmit = async (e) => {
@@ -66,7 +65,6 @@ const TrackingForm = () => {
       alert('An error occurred while fetching shipment data. Please try again later.')
     }
   }
-
   const handleUpdate = async (e) => {
     e.preventDefault()
     if (!shipmentData) {

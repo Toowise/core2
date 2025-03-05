@@ -25,7 +25,7 @@ const ShipmentInfo = ({ data }) => {
 
       {/* Timeline */}
       <AnimatePresence>
-        {showDetails && (
+        {showDetails && data.events && (
           <motion.div
             key="timeline"
             initial={{ opacity: 0, y: -10 }}
@@ -46,7 +46,7 @@ const ShipmentInfo = ({ data }) => {
                 <div className="status-details">
                   <p className={`status-text ${index === 0 ? 'bold-text' : ''}`}>{event.status}</p>
                   <p className="date-time">
-                    {event.date} {event.time}
+                    {event.date} {event.time} - 📍 {data.current_location}
                   </p>
                 </div>
               </div>
@@ -68,25 +68,10 @@ ShipmentInfo.propTypes = {
         status: PropTypes.string.isRequired,
         date: PropTypes.string.isRequired,
         time: PropTypes.string.isRequired,
+        location: PropTypes.string.isRequired,
       }),
     ).isRequired,
   }).isRequired,
 }
 
-// Sample Data
-const TrackingData = {
-  trackingNumber: 'TRK123456789',
-  status: 'Delivered',
-  events: [
-    { status: 'Parcel has been delivered', date: '02 Aug', time: '17:40' },
-    { status: 'Parcel is out for delivery', date: '02 Aug', time: '13:13' },
-    { status: 'Arrived at delivery hub: North East Caloocan', date: '02 Aug', time: '06:30' },
-    { status: 'Departed from sorting facility', date: '01 Aug', time: '20:14' },
-    { status: 'Parcel received at facility: SOC 5 SPX', date: '01 Aug', time: '15:00' },
-    { status: 'Arrived at destination port: Manila', date: '01 Aug', time: '04:31' },
-  ],
-}
-
-export default function App() {
-  return <ShipmentInfo data={TrackingData} />
-}
+export default ShipmentInfo

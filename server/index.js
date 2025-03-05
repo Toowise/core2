@@ -34,7 +34,14 @@ const trackDataSchema = new mongoose.Schema({
   longitude: {
     type: Number,
     required: false, 
-  }
+  },
+  events: [
+    {
+      status: { type: String, required: true },
+      date: { type: String, required: true },
+      time: { type: String, required: true },
+    },
+  ],
 });
 const TrackData = mongoose.model('Trackdata', trackDataSchema);
 
@@ -51,6 +58,31 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
+// ShipmentUpdate
+const updateShipmentLocation = async () => {
+  try {
+    const shipments = await TrackData.find();
+
+    shipments.forEach(async (shipment) => {
+      const newLatitude = shipment.latitude + (Math.random() - 0.5) * 0.01;
+      const newLongitude = shipment.longitude + (Math.random() - 0.5) * 0.01;
+
+      shipment.latitude = newLatitude;
+      shipment.longitude = newLongitude;
+
+      
+      await shipment.save();
+    });
+
+    console.log('Shipment locations updated!');
+  } catch (error) {
+    console.error('Error updating shipment locations:', error);
+  }
+};
+
+// Run every 30 seconds
+setInterval(updateShipmentLocation, 30000);
+
 //Login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -113,7 +145,7 @@ app.post('/createUser', async (req, res) => {
     res.status(500).json({ message: 'Failed to create user' });
   }
 });
-
+// Delete
 app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
   try {
@@ -128,7 +160,7 @@ app.delete('/track/:trackingNumber', async (req, res) => {
       res.status(500).json({ status: 'error', message: 'Error deleting shipment' });
   }
 });
-
+//Track
 app.post('/track', async (req, res) => {
   const { trackingNumber } = req.body;
 
@@ -159,6 +191,7 @@ app.post('/track', async (req, res) => {
         longitude: Number(shipment.longitude),
         carrier: shipment.carrier,
         contact: shipment.contact,
+        events: shipment.events,
       });
     } else {
       return res.status(404).json({ status: 'error', message: 'Invalid Tracking Number' });
