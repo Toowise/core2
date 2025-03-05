@@ -62,13 +62,13 @@ const ShipmentInfo = ({ data }) => {
 ShipmentInfo.propTypes = {
   data: PropTypes.shape({
     trackingNumber: PropTypes.string.isRequired,
+    current_location: PropTypes.string.isRequired,
     status: PropTypes.string.isRequired,
     events: PropTypes.arrayOf(
       PropTypes.shape({
         status: PropTypes.string.isRequired,
         date: PropTypes.string.isRequired,
         time: PropTypes.string.isRequired,
-        location: PropTypes.string.isRequired,
       }),
     ).isRequired,
   }).isRequired,

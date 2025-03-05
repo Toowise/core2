@@ -58,31 +58,6 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
-// ShipmentUpdate
-const updateShipmentLocation = async () => {
-  try {
-    const shipments = await TrackData.find();
-
-    shipments.forEach(async (shipment) => {
-      const newLatitude = shipment.latitude + (Math.random() - 0.5) * 0.01;
-      const newLongitude = shipment.longitude + (Math.random() - 0.5) * 0.01;
-
-      shipment.latitude = newLatitude;
-      shipment.longitude = newLongitude;
-
-      
-      await shipment.save();
-    });
-
-    console.log('Shipment locations updated!');
-  } catch (error) {
-    console.error('Error updating shipment locations:', error);
-  }
-};
-
-// Run every 30 seconds
-setInterval(updateShipmentLocation, 30000);
-
 //Login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
