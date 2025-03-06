@@ -3,20 +3,45 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios'); 
-const app = express();  
+const app = express();
+const http = require('http');
+const { Server } = require('socket.io'); // Import socket.io
+const server = http.createServer(app);  // Create HTTP server  
 const User = require('./models/User');
 const PORT = process.env.PORT || 5052;
 const Admin = require('./middleware/Admin');
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-app.use(cors());
-app.use(express.json());
 
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || "*",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.use(express.json());
+const io = new Server(server, { cors: { origin: "*" } }); // Enable CORS for WebSocket
 const mongoURI = process.env.mongoURIProduction;
 
 mongoose.connect(mongoURI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+io.on("connection", (socket) => {
+  console.log("A client connected:", socket.id);
+  
+  socket.on("joinTracking", (trackingNumber) => {
+    console.log(`Client joined tracking: ${trackingNumber}`);
+    socket.join(trackingNumber); // Client joins a WebSocket room for the shipment
+  });
+  socket.on("leaveTracking", (trackingNumber) => {
+    console.log(`Client left tracking: ${trackingNumber}`);
+    socket.leave(trackingNumber);
+  });
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
 
 const trackDataSchema = new mongoose.Schema({
   trackingNumber: String,
@@ -25,8 +50,6 @@ const trackDataSchema = new mongoose.Schema({
   current_location: String,
   expected_delivery: Date,
   deliveryAddress: String,
-  carrier: String,
-  contact: String,
   latitude: {
     type: Number,
     required: false, 
@@ -58,6 +81,32 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
+
+app.put('/shipments/location-update', async (req, res) => {
+  const { trackingNumber, latitude, longitude } = req.body;
+
+  try {
+    const shipment = await TrackData.findOne({ trackingNumber });
+
+    if (!shipment) {
+      return res.status(404).json({ message: 'Shipment not found' });
+    }
+
+    // Update location in database
+    shipment.latitude = latitude;
+    shipment.longitude = longitude;
+    shipment.updated_at = new Date();
+
+    const updatedShipment = await shipment.save();
+
+    // Emit real-time update to clients tracking this shipment
+    io.to(trackingNumber).emit("locationUpdate", updatedShipment);
+
+    res.json({ status: 'success', data: updatedShipment });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update location' });
+  }
+});
 //Login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -124,7 +173,7 @@ app.post('/createUser', async (req, res) => {
 app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
   try {
-      const deletedShipment = await TrackData.findOneAndDelete(trackingNumber);
+      const deletedShipment = await TrackData.findOneAndDelete({ trackingNumber });
       
       if (!deletedShipment) {
           return res.status(404).json({ status: 'error', message: 'Shipment not found' });
@@ -176,26 +225,6 @@ app.post('/track', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 });
-app.put('/shipments/update', async (req, res) => {
-  const { trackingNumber, carrier, contact } = req.body;
-
-  try {
-    const shipment = await TrackData.findOne({ trackingNumber: trackingNumber });
-    
-    if (!shipment) {
-      return res.status(404).json({ message: 'Shipment not found' });
-    }
-
-    shipment.carrier = carrier;
-    shipment.contact = contact;
-
-    const updatedShipment = await shipment.save()
-    res.json(updatedShipment);
-  } catch (err) {
-    res.status(500).json({ message:'Update Failed'})
-  }
-});
-
 app.get('/history', async (req, res) => {
   try {
     const shippedData = await TrackData.find();

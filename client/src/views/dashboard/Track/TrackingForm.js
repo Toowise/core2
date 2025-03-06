@@ -1,12 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import axios from '/src/api/axios.js'
+import io from 'socket.io-client'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
 import Modal from '../Modal.js'
 import { useStateContext } from '../../../context/contextProvider.js'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../../config.js'
+
+const socket = io('http://localhost:5052') // Connect to WebSocket server
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
@@ -34,6 +37,27 @@ const TrackingForm = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [mapInstance, setMapInstance] = useState(null)
   const { user } = useStateContext()
+
+  // 🔴 Connect WebSocket for Live Tracking
+  useEffect(() => {
+    if (trackingNumber) {
+      socket.emit('joinTracking', trackingNumber) // Join WebSocket room
+
+      socket.on('locationUpdate', (updatedShipment) => {
+        console.log('Live location update received:', updatedShipment)
+        setShipmentData((prevData) => ({
+          ...prevData,
+          latitude: updatedShipment.latitude,
+          longitude: updatedShipment.longitude,
+          updated_at: new Date(updatedShipment.updated_at),
+        }))
+      })
+
+      return () => {
+        socket.off('locationUpdate') // Cleanup WebSocket listener
+      }
+    }
+  }, [trackingNumber])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -65,6 +89,7 @@ const TrackingForm = () => {
       alert('An error occurred while fetching shipment data. Please try again later.')
     }
   }
+
   const handleUpdate = async (e) => {
     e.preventDefault()
     if (!shipmentData) {
@@ -136,13 +161,14 @@ const TrackingForm = () => {
           <button type="submit">Track</button>
         </div>
       </form>
+
       {shipmentData && user?.userRole === 'admin' && (
         <div className="edit">
           <button onClick={toggleEditMode}>{isEditMode ? 'Cancel' : 'Edit Carrier Info'}</button>
         </div>
       )}
-      {shipmentData && <ShipmentInfo data={shipmentData} />}
 
+      {shipmentData && <ShipmentInfo data={shipmentData} />}
       {renderMap()}
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
