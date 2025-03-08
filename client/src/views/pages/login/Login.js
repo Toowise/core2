@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import axios from '../../../api/axios'
+import axios from '/src/api/axios.js'
+import { useNavigate } from 'react-router-dom'
 import { useStateContext } from '../../../context/contextProvider'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
@@ -20,16 +21,14 @@ import {
   CSpinner,
 } from '@coreui/react'
 import './Login.scss'
-
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-
   const { setUser } = useStateContext()
-
+  const navigate = useNavigate()
   const handleLogin = async (e) => {
     e.preventDefault()
     setIsLoading(true)
@@ -138,7 +137,11 @@ const Login = () => {
                       <CButton type="submit" color="primary" className="rounded">
                         Login
                       </CButton>
-                      <CButton color="outline-primary" className="rounded" disabled>
+                      <CButton
+                        color="primary"
+                        className="rounded"
+                        onClick={() => navigate('/signup')}
+                      >
                         Signup
                       </CButton>
                     </CButtonGroup>

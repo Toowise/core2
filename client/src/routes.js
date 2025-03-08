@@ -5,7 +5,7 @@ const TrackingForm = React.lazy(() => import('./views/dashboard/Track/TrackingFo
 const ShipmentHistory = React.lazy(
   () => import('./views/dashboard/ShipmentHistory/ShipmentHistory'),
 )
-const CreateUserForm = React.lazy(() => import('./views/dashboard/CreateUser'))
+const Signup = React.lazy(() => import('./views/pages/login/signup/signup'))
 // Buttons
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))
@@ -42,7 +42,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/trackingform', name: 'Shipment Tracker', element: TrackingForm },
   { path: '/shipmenthistory', name: 'Shipment History', element: ShipmentHistory },
-  { path: '/createuser', name: 'Create User', element: CreateUserForm },
+  { path: '/signup', name: 'Signup', element: Signup },
   { path: '/buttons', name: 'Buttons', element: Buttons, exact: true },
   { path: '/buttons/buttons', name: 'Buttons', element: Buttons },
   { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns },

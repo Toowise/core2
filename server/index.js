@@ -5,14 +5,13 @@ const cors = require('cors');
 const axios = require('axios'); 
 const app = express();
 const http = require('http');
-const { Server } = require('socket.io'); // Import socket.io
-const server = http.createServer(app);  // Create HTTP server  
+const { Server } = require('socket.io');
+const server = http.createServer(app);  
 const User = require('./models/User');
 const PORT = process.env.PORT || 5052;
 const Admin = require('./middleware/Admin');
 const bcryptjs = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -20,7 +19,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
-const io = new Server(server, { cors: { origin: "*" } }); // Enable CORS for WebSocket
+const io = new Server(server, { cors: { origin: "*" } }); 
 const mongoURI = process.env.mongoURIProduction;
 
 mongoose.connect(mongoURI)
@@ -32,7 +31,7 @@ io.on("connection", (socket) => {
   
   socket.on("joinTracking", (trackingNumber) => {
     console.log(`Client joined tracking: ${trackingNumber}`);
-    socket.join(trackingNumber); // Client joins a WebSocket room for the shipment
+    socket.join(trackingNumber); 
   });
   socket.on("leaveTracking", (trackingNumber) => {
     console.log(`Client left tracking: ${trackingNumber}`);
@@ -146,29 +145,53 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-
-//Create User
-app.post('/createUser', async (req, res) => {
-  const { username, password, userRole } = req.body;
+// Signup
+app.post("/signup", async (req, res) => {
+  const { fullname, username, email, password, phone, address } = req.body;
 
   try {
-    const hashedPassword = await bcryptjs.hash(password, 10);
+   
+    if (!fullname || !username || !email || !password || !phone || !address) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
 
+   
+    let userExists = await User.findOne({ $or: [{ email }, { username }] });
+    if (userExists) {
+      return res.status(400).json({ success: false, message: "Email or Username already exists" });
+    }
+
+    // Hash password
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(password, salt);
+
+    // Create user
     const newUser = new User({
+      fullname,
       username,
-      password: hashedPassword,  
-      userRole,  
+      email,
+      password: hashedPassword,
+      phone,
+      address,
+      userRole: "user", 
     });
 
     await newUser.save();
-    
-    res.json({ message: 'User created successfully', newUser });
+
+    // Generate token
+    const token = jwt.sign(
+      { username: newUser.username, userRole: newUser.userRole }, 
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(201).json({ success: true, message: "User registered successfully", token });
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ message: 'Failed to create user' });
+    console.error("Signup error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 // Delete
 app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;

@@ -31,14 +31,5 @@ const _nav = [
       color: 'info',
     },
   },
-  {
-    component: CNavItem,
-    name: 'Create User',
-    to: '/createuser',
-    icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
-    badge: {
-      color: 'info',
-    },
-  },
 ]
 export default _nav
