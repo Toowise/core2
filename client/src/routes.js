@@ -5,7 +5,7 @@ const TrackingForm = React.lazy(() => import('./views/dashboard/Track/TrackingFo
 const ShipmentHistory = React.lazy(
   () => import('./views/dashboard/ShipmentHistory/ShipmentHistory'),
 )
-const Signup = React.lazy(() => import('./views/pages/login/signup/signup'))
+const Signup = React.lazy(() => import('./views/pages/login/signup/Signup'))
 // Buttons
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))

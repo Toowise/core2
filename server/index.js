@@ -250,9 +250,6 @@ app.post("/verify-email", async (req, res) => {
   }
 });
 
-
-
-
 // Delete 
 app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
@@ -310,6 +307,7 @@ app.post('/track', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 });
+
 app.get('/history', async (req, res) => {
   try {
     const shippedData = await TrackData.find();

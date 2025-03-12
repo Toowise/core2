@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import { useStateContext } from './context/contextProvider'
-import Signup from './views/pages/login/signup/signup'
+import Signup from './views/pages/login/signup/Signup'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
@@ -55,7 +55,7 @@ const App = () => {
           />
 
           {/* Additional routes */}
-          <Route path="/Signup" element={<Signup />} />
+          <Route path="/signup" element={<Signup />} />
           <Route path="/404" element={<Page404 />} />
           <Route path="/500" element={<Page500 />} />
 
