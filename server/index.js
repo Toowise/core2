@@ -2,46 +2,59 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const axios = require('axios'); 
-const app = express();
+const axios = require('axios');
 const http = require('http');
 const { Server } = require('socket.io');
-const server = http.createServer(app);  
-const User = require('./models/User');
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const admin = require("firebase-admin");
+const serviceAccount = require("./firebase-service-account.json");
+const User = require('./models/User'); 
 const PORT = process.env.PORT || 5052;
-const Admin = require('./middleware/Admin');
-const bcryptjs = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-};
-app.use(cors(corsOptions));
-app.use(express.json());
-const io = new Server(server, { cors: { origin: "*" } }); 
-const mongoURI = process.env.mongoURIProduction;
 
+// Initialize Express & Server
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+
+// Firebase Admin Initialization
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+console.log("🔥 Firebase Admin Initialized:", admin.apps.length);
+
+// Middleware
+app.use(cors({ origin: process.env.FRONTEND_URL || "*", credentials: true }));
+app.use(express.json());
+
+// MongoDB Connection
+const mongoURI = process.env.mongoURIProduction;
 mongoose.connect(mongoURI)
-  .then(() => console.log('MongoDB connected'))
+  .then(() => console.log(' MongoDB connected '))
   .catch(err => console.error('MongoDB connection error:', err));
 
+// Socket.IO Connection
 io.on("connection", (socket) => {
   console.log("A client connected:", socket.id);
   
   socket.on("joinTracking", (trackingNumber) => {
     console.log(`Client joined tracking: ${trackingNumber}`);
-    socket.join(trackingNumber); 
+    socket.join(trackingNumber);
   });
+
   socket.on("leaveTracking", (trackingNumber) => {
     console.log(`Client left tracking: ${trackingNumber}`);
     socket.leave(trackingNumber);
   });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
 });
 
+// Mongoose Schema for Tracking Data
 const trackDataSchema = new mongoose.Schema({
   trackingNumber: String,
   status: String,
@@ -49,14 +62,8 @@ const trackDataSchema = new mongoose.Schema({
   current_location: String,
   expected_delivery: Date,
   deliveryAddress: String,
-  latitude: {
-    type: Number,
-    required: false, 
-  },
-  longitude: {
-    type: Number,
-    required: false, 
-  },
+  latitude: Number,
+  longitude: Number,
   events: [
     {
       status: { type: String, required: true },
@@ -67,46 +74,20 @@ const trackDataSchema = new mongoose.Schema({
 });
 const TrackData = mongoose.model('Trackdata', trackDataSchema);
 
+// Helper Function to Get Geolocation
 const getCoordinates = async (location) => {
-  const apiKey = process.env.apiKey 
+  const apiKey = process.env.apiKey;
   const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${apiKey}`;
 
   try {
     const response = await axios.get(apiUrl);
-    const { lat, lng } = response.data.results[0].geometry; 
+    const { lat, lng } = response.data.results[0].geometry;
     return { latitude: lat, longitude: lng };
   } catch (error) {
-    console.error('Error fetching geolocation:', error);
+    console.error(' Error fetching geolocation:', error);
     return null;
   }
 };
-
-app.put('/shipments/location-update', async (req, res) => {
-  const { trackingNumber, latitude, longitude } = req.body;
-
-  try {
-    const shipment = await TrackData.findOne({ trackingNumber });
-
-    if (!shipment) {
-      return res.status(404).json({ message: 'Shipment not found' });
-    }
-
-    // Update location in database
-    shipment.latitude = latitude;
-    shipment.longitude = longitude;
-    shipment.updated_at = new Date();
-
-    const updatedShipment = await shipment.save();
-
-    // Emit real-time update to clients tracking this shipment
-    io.to(trackingNumber).emit("locationUpdate", updatedShipment);
-
-    res.json({ status: 'success', data: updatedShipment });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update location' });
-  }
-});
-//Login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -145,69 +126,150 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-// Signup
-app.post("/signup", async (req, res) => {
-  const { fullname, username, email, password, phone, address } = req.body;
 
+//Signup 
+app.post("/signup", async (req, res) => {
   try {
-   
-    if (!fullname || !username || !email || !password || !phone || !address) {
-      return res.status(400).json({ success: false, message: "All fields are required" });
+    console.log("Incoming signup request:", req.body); // Debugging log
+
+    const { fullname, username, email, password, address } = req.body;
+
+    if (!fullname || !username || !email || !password || !address) {
+      console.error(" Validation Error: Missing fields"); 
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-   
+    // Check if user exists
     let userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {
-      return res.status(400).json({ success: false, message: "Email or Username already exists" });
+      console.error(" User already exists:", { email, username });
+      return res.status(400).json({ message: "Email or Username already exists" });
     }
 
-    // Hash password
-    const salt = await bcryptjs.genSalt(10);
-    const hashedPassword = await bcryptjs.hash(password, salt);
+    // Hash the password
+    const hashedPassword = await bcryptjs.hash(password, 10);
 
-    // Create user
+    // Create Firebase user
+    let firebaseUser;
+    try {
+      firebaseUser = await admin.auth().getUserByEmail(email);
+      console.log(" User already exists in Firebase:", firebaseUser.uid);
+    } catch (firebaseError) {
+      if (firebaseError.code === "auth/user-not-found") {
+        try {
+          firebaseUser = await admin.auth().createUser({
+            email,
+            password,
+            displayName: fullname,
+          });
+          console.log(" Firebase user created:", firebaseUser.uid);
+        } catch (createError) {
+          console.error(" Firebase Error:", createError.code, createError.message);
+          return res.status(500).json({ message: "Firebase user creation failed", error: createError.message });
+        }
+      } else {
+        console.error(" Firebase Lookup Error:", firebaseError.code, firebaseError.message);
+        return res.status(500).json({ message: "Firebase lookup failed", error: firebaseError.message });
+      }
+    }
+
+    // Save user in MongoDB (emailVerified defaults to false)
     const newUser = new User({
+      firebaseUid: firebaseUser.uid,
       fullname,
       username,
       email,
       password: hashedPassword,
-      phone,
       address,
-      userRole: "user", 
+      userRole: "user",
+      emailVerified: false, 
     });
 
     await newUser.save();
+    console.log(" User saved successfully in MongoDB!");
 
-    // Generate token
-    const token = jwt.sign(
-      { username: newUser.username, userRole: newUser.userRole }, 
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // Generate Firebase token
+    const firebaseToken = await admin.auth().createCustomToken(firebaseUser.uid);
+    
+    res.status(201).json({ 
+      message: "User registered successfully. Please check your email to verify your account.", 
+      token: firebaseToken 
+    });
 
-    res.status(201).json({ success: true, message: "User registered successfully", token });
   } catch (error) {
-    console.error("Signup error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error(" Signup Error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
-// Delete
+
+
+//  Email
+app.post("/verify-email", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    console.log(` Checking email verification for: ${email}`);
+
+    // 1️⃣ Get user from Firebase
+    const userRecord = await admin.auth().getUserByEmail(email);
+    if (!userRecord) {
+      console.log(" User not found in Firebase.");
+      return res.status(404).json({ success: false, message: "User not found in Firebase." });
+    }
+
+    console.log(` Firebase emailVerified: ${userRecord.emailVerified}`);
+
+    // Check if email is verified
+    if (userRecord.emailVerified) {
+      // Update MongoDB only if it's not already true
+      const updatedUser = await User.findOneAndUpdate(
+        { email }, 
+        { emailVerified: true }, 
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        console.log(" User not found in MongoDB.");
+        return res.status(404).json({ success: false, message: "User not found in database." });
+      }
+
+      console.log(` MongoDB emailVerified updated for: ${updatedUser.email}`);
+      return res.status(200).json({ 
+        success: true, 
+        message: " Email verified successfully!", 
+        user: { email: updatedUser.email, emailVerified: updatedUser.emailVerified } 
+      });
+    } else {
+      console.log(" Email not verified in Firebase yet.");
+      return res.status(400).json({ success: false, message: " Email not verified yet. Please check your inbox." });
+    }
+  } catch (error) {
+    console.error(" Email verification check error:", error);
+    res.status(500).json({ success: false, message: "Server error. Please try again later." });
+  }
+});
+
+
+
+
+// Delete 
 app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
   try {
-      const deletedShipment = await TrackData.findOneAndDelete({ trackingNumber });
-      
-      if (!deletedShipment) {
-          return res.status(404).json({ status: 'error', message: 'Shipment not found' });
-      }
-      res.json({ status: 'success', message: 'Shipment deleted successfully' });
+    const deletedShipment = await TrackData.findOneAndDelete({ trackingNumber });
+
+    if (!deletedShipment) {
+      return res.status(404).json({ status: 'error', message: 'Shipment not found' });
+    }
+    res.json({ status: 'success', message: 'Shipment deleted successfully' });
   } catch (err) {
-      console.error(err);
-      res.status(500).json({ status: 'error', message: 'Error deleting shipment' });
+    console.error(err);
+    res.status(500).json({ status: 'error', message: 'Error deleting shipment' });
   }
 });
-//Track
+
+// Track Shipment
 app.post('/track', async (req, res) => {
   const { trackingNumber } = req.body;
 
@@ -222,7 +284,7 @@ app.post('/track', async (req, res) => {
         if (coordinates) {
           shipment.latitude = coordinates.latitude;
           shipment.longitude = coordinates.longitude;
-          await shipment.save(); 
+          await shipment.save();
         } else {
           return res.status(500).json({ status: 'error', message: 'Unable to fetch geolocation.' });
         }
@@ -262,6 +324,7 @@ app.get('/history', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on PORT: ${PORT}`);
+// Start Server
+server.listen(PORT, () => {
+  console.log(` Server running on PORT: ${PORT}`);
 });

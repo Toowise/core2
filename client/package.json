@@ -11,7 +11,7 @@
     "url": "git@github.com:freight-capstone/main.git"
   },
   "license": "MIT",
-  "author": "The Freight Capsone Team (https://github.com/orgs/freight-capstone/people) && The CoreUI Team (https://github.com/orgs/coreui/people)",
+  "author": "The Freight Capstone Team (https://github.com/orgs/freight-capstone/people) && The CoreUI Team (https://github.com/orgs/coreui/people)",
   "scripts": {
     "build": "vite build",
     "lint": "eslint \"src/**/*.js\"",
@@ -36,6 +36,7 @@
     "chart.js": "^4.4.3",
     "classnames": "^2.5.1",
     "core-js": "^3.37.1",
+    "firebase": "^11.4.0",
     "framer-motion": "^12.4.7",
     "ldrs": "^1.0.2",
     "prop-types": "^15.8.1",
