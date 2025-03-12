@@ -23,7 +23,6 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   });
 }
-console.log("🔥 Firebase Admin Initialized:", admin.apps.length);
 
 // Middleware
 app.use(cors({ origin: process.env.FRONTEND_URL || "*", credentials: true }));
@@ -211,7 +210,7 @@ app.post("/verify-email", async (req, res) => {
   try {
     console.log(` Checking email verification for: ${email}`);
 
-    // 1️⃣ Get user from Firebase
+    // Get user from Firebase
     const userRecord = await admin.auth().getUserByEmail(email);
     if (!userRecord) {
       console.log(" User not found in Firebase.");
