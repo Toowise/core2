@@ -1,0 +1,32 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Test SSH Connection
+        run: |
+          ssh -o StrictHostKeyChecking=no corea8702@157.173.111.118 -p 2298
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no corea8702@157.173.111.118 -p 2298 << 'EOF'
+            cd public_html
+            git stash
+            git pull origin main
+            npm install
+            npm run build
+          EOF
