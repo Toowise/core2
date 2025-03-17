@@ -3,13 +3,13 @@ import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from '
 
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyA3CgYeXDorXVjaG78kN69hZQpXnq8jRf4',
-  authDomain: 'localhost',
-  projectId: 'shiptrack-efb5b',
-  storageBucket: 'shiptrack-efb5b.firebasestorage.app',
-  messagingSenderId: '36601251439',
-  appId: '1:36601251439:web:ef05c08ce2a86bb5ccaf9a',
-  measurementId: 'G-4Z6R5ME15D',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 // Initialize Firebase
