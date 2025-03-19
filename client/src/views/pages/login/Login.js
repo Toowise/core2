@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from '/src/api/axios.js'
+import axios from 'src/api/axios.js'
 import { useNavigate } from 'react-router-dom'
 import { useStateContext } from '../../../context/contextProvider'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

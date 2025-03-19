@@ -24,7 +24,6 @@ if (!admin.apps.length) {
   });
 }
 
-// Middleware
 app.use(cors({ origin: process.env.FRONTEND_URL || "*", credentials: true }));
 app.use(express.json());
 
@@ -129,8 +128,7 @@ app.post('/login', async (req, res) => {
 //Signup 
 app.post("/signup", async (req, res) => {
   try {
-    console.log("Incoming signup request:", req.body); // Debugging log
-
+    console.log("Incoming signup request:", req.body); 
     const { fullname, username, email, password, address } = req.body;
 
     if (!fullname || !username || !email || !password || !address) {
@@ -172,7 +170,7 @@ app.post("/signup", async (req, res) => {
       }
     }
 
-    // Save user in MongoDB (emailVerified defaults to false)
+    // Save user in MongoDB 
     const newUser = new User({
       firebaseUid: firebaseUser.uid,
       fullname,
