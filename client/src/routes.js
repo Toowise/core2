@@ -2,10 +2,10 @@ import React from 'react'
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const TrackingForm = React.lazy(() => import('./views/dashboard/Track/TrackingForm'))
-const ShipmentHistory = React.lazy(
-  () => import('./views/dashboard/ShipmentHistory/ShipmentHistory'),
-)
+const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory/ShipmentHistory'))
 const Signup = React.lazy(() => import('./views/pages/login/signup/Signup'))
+const DriverLogin = React.lazy(() => import('./views/driver/driverlogin'))
+const DriverTracking = React.lazy(() => import('./views/driver/drivertracking'))
 
 // Buttons
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
@@ -44,6 +44,8 @@ const routes = [
   { path: '/trackingform', name: 'Shipment Tracker', element: TrackingForm },
   { path: '/shipmenthistory', name: 'Shipment History', element: ShipmentHistory },
   { path: '/signup', name: 'Signup', element: Signup },
+  { path: '/driverlogin', name: 'DriverLogin', element: DriverLogin },
+  { path: '/drivertracking', name: 'DriverTracking', element: DriverTracking },
   { path: '/buttons', name: 'Buttons', element: Buttons, exact: true },
   { path: '/buttons/buttons', name: 'Buttons', element: Buttons },
   { path: '/buttons/dropdowns', name: 'Dropdowns', element: Dropdowns },

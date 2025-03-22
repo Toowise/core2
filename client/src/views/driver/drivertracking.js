@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { VITE_APP_GOOGLE_MAP } from '../../../config.js';
+import { VITE_APP_GOOGLE_MAP } from '/src/config.js';
 
 const socket = io("http://localhost:5052");
 
@@ -10,9 +10,9 @@ const DriverTracking = () => {
   const [shipments, setShipments] = useState([]);
   const [selectedShipments, setSelectedShipments] = useState([]);
   const [location, setLocation] = useState(null);
-  
+  const [mapInstance, setMapInstance] = useState(null);
+
   useEffect(() => {
-    // Fetch shipments assigned to the logged-in driver
     axios.get('/driver/shipments')
       .then(response => setShipments(response.data))
       .catch(error => console.error("Error fetching shipments:", error));
@@ -20,26 +20,52 @@ const DriverTracking = () => {
 
   useEffect(() => {
     if (selectedShipments.length > 0) {
-      const watchId = navigator.geolocation.watchPosition(position => {
-        const { latitude, longitude } = position.coords;
-        setLocation({ latitude, longitude });
-        
-        // Emit location update for all selected shipments
-        socket.emit("driverLocationUpdate", {
-          trackingNumbers: selectedShipments,
-          latitude,
-          longitude
-        });
-      });
+      const watchId = navigator.geolocation.watchPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+
+          selectedShipments.forEach(trackingNumber => {
+            socket.emit("driverLocationUpdate", {
+              trackingNumber,
+              latitude,
+              longitude
+            });
+          });
+        },
+        error => {
+          console.error("Geolocation error:", error);
+          alert("Location tracking is disabled. Please enable GPS.");
+        },
+        { enableHighAccuracy: true, maximumAge: 10000 }
+      );
 
       return () => navigator.geolocation.clearWatch(watchId);
     }
   }, [selectedShipments]);
 
+  useEffect(() => {
+    if (mapInstance && location) {
+      mapInstance.panTo({ lat: location.latitude, lng: location.longitude });
+    }
+  }, [location, mapInstance]);
+
   const handleShipmentSelect = (trackingNumber) => {
-    setSelectedShipments(prev => 
-      prev.includes(trackingNumber) ? prev.filter(num => num !== trackingNumber) : [...prev, trackingNumber]
-    );
+    setSelectedShipments(prev => {
+      const updatedList = prev.includes(trackingNumber)
+        ? prev.filter(num => num !== trackingNumber)
+        : [...prev, trackingNumber];
+
+      if (location && !prev.includes(trackingNumber)) {
+        socket.emit("driverLocationUpdate", {
+          trackingNumber,
+          latitude: location.latitude,
+          longitude: location.longitude
+        });
+      }
+
+      return updatedList;
+    });
   };
 
   return (
@@ -61,7 +87,12 @@ const DriverTracking = () => {
 
       {location && (
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
-          <GoogleMap mapContainerStyle={{ height: '300px', width: '100%' }} center={location} zoom={13}>
+          <GoogleMap
+            mapContainerStyle={{ height: '300px', width: '100%' }}
+            center={location}
+            zoom={13}
+            onLoad={map => setMapInstance(map)}
+          >
             <Marker position={location} />
           </GoogleMap>
         </LoadScript>

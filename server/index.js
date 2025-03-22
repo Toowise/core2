@@ -10,8 +10,8 @@ const jwt = require('jsonwebtoken');
 const admin = require("firebase-admin");
 const serviceAccount = require("./firebase-service-account.json");
 const User = require('./models/User'); 
+const Driver = require('./models/Driver');
 const PORT = process.env.PORT || 5052;
-
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
@@ -86,6 +86,7 @@ const getCoordinates = async (location) => {
     return null;
   }
 };
+//Login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -198,8 +199,95 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+//Driver Login
+app.post('/driverlogin', async (req, res) => {
+  const { username, password } = req.body;
 
+  try {
+    // Find driver by username
+    const driver = await Driver.findOne({ username });
+    if (!driver) return res.status(400).json({ success: false, message: 'Invalid credentials' });
 
+    // Check password
+    const isMatch = await bcryptjs.compare(password, driver.password);
+    if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { id: driver._id, userRole: 'driver' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' } // Token valid for 7 days
+    );
+
+    res.json({ success: true, token, driver: { id: driver._id, name: driver.name, email: driver.email } });
+  } catch (error) {
+    console.error("Driver login error:", error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+// Middleware to Authenticate Driver
+const authenticateDriver = async (req, res, next) => {
+  const token = req.header('Authorization');
+  if (!token) return res.status(401).json({ success: false, message: "No token provided" });
+
+  try {
+    const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
+    
+    if (decoded.userRole !== 'driver') {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    req.driver = decoded;
+    next();
+  } catch (err) {
+    res.status(401).json({ success: false, message: "Invalid token" });
+  }
+};
+
+//Driver get shipments
+app.get('/driver/shipments', authenticateDriver, async (req, res) => {
+  try {
+    // Assuming the driver has a field `assignedShipments` storing tracking numbers
+    const driverAssignedShipments = req.driver.assignedShipments; 
+    const shipments = await TrackData.find({ trackingNumber: { $in: driverAssignedShipments } });
+
+    res.json(shipments);
+  } catch (error) {
+    console.error("Error fetching driver shipments:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+//Driver Tracking
+io.on("connection", (socket) => {
+  console.log("Driver connected:", socket.id);
+
+  socket.on("driverLocationUpdate", async (data) => {
+    console.log(` Location update received for ${data.trackingNumbers.join(", ")} - Lat: ${data.latitude}, Lng: ${data.longitude}`);
+
+    try {
+      // Update location in TrackData instead of Shipment
+      await TrackData.updateMany(
+        { trackingNumber: { $in: data.trackingNumbers } },
+        { $set: { latitude: data.latitude, longitude: data.longitude, updated_at: new Date() } }
+      );
+
+      // Notify clients tracking these shipments
+      data.trackingNumbers.forEach(trackingNumber => {
+        io.to(trackingNumber).emit("shipmentLocationUpdate", {
+          trackingNumber,
+          latitude: data.latitude,
+          longitude: data.longitude
+        });
+      });
+    } catch (error) {
+      console.error("Error updating shipment location:", error);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Driver disconnected:", socket.id);
+  });
+});
 
 //  Email
 app.post("/verify-email", async (req, res) => {
