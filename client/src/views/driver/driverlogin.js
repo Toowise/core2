@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   CContainer,
   CRow,
@@ -14,49 +14,48 @@ import {
   CButtonGroup,
   CAlert,
   CSpinner,
-  CTooltip
-} from '@coreui/react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons';
-import axios from '../../api/axios';
+  CTooltip,
+} from '@coreui/react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
+import axios from '../../api/axios'
 
 const DriverLogin = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const navigate = useNavigate()
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setErrorMessage('');
+    e.preventDefault()
+    setIsLoading(true)
+    setErrorMessage('')
 
     try {
       // Send login request to the backend
-      const response = await axios.post('/driverlogin', { 
-        username, 
-        password 
-      });
+      const response = await axios.post('/driverlogin', {
+        username,
+        password,
+      })
       console.log('Login response:', response.data)
-      const data = response.data; 
-      
+      const data = response.data
+
       if (!data.success) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || 'Login failed')
       }
-  
+
       // Store token and navigate
-      sessionStorage.setItem('driverToken', data.token);
-      window.dispatchEvent(new Event("storage"));
-      navigate('/drivertracking');
-  
+      sessionStorage.setItem('driverToken', data.token)
+      window.dispatchEvent(new Event('storage'))
+      navigate('/drivertracking')
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || 'Server error');
+      setErrorMessage(error.response?.data?.message || 'Server error')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
@@ -105,7 +104,10 @@ const DriverLogin = () => {
                       required
                     />
                     <CInputGroupText>
-                      <CTooltip content={isPasswordVisible ? 'Hide password' : 'Show password'} placement="top">
+                      <CTooltip
+                        content={isPasswordVisible ? 'Hide password' : 'Show password'}
+                        placement="top"
+                      >
                         <span onClick={() => setIsPasswordVisible(!isPasswordVisible)}>
                           <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye} />
                         </span>
@@ -115,15 +117,28 @@ const DriverLogin = () => {
                   <p>
                     <small>
                       By continuing, you agree to our
-                      <a href="/policy" className="text-primary"> Privacy Policy </a>
+                      <a href="/policy" className="text-primary">
+                        {' '}
+                        Privacy Policy{' '}
+                      </a>
                       and
-                      <a href="/terms" className="text-primary"> Terms of Service</a>.
+                      <a href="/terms" className="text-primary">
+                        {' '}
+                        Terms of Service
+                      </a>
+                      .
                     </small>
                   </p>
                   <div className="d-grid mb-3">
                     <CButtonGroup>
-                      <CButton type="submit" color="primary" className="rounded">Login</CButton>
-                      <CButton color="primary" className="rounded" onClick={() => navigate('/signup')}>
+                      <CButton type="submit" color="primary" className="rounded">
+                        Login
+                      </CButton>
+                      <CButton
+                        color="primary"
+                        className="rounded"
+                        onClick={() => navigate('/signup')}
+                      >
                         Signup
                       </CButton>
                     </CButtonGroup>
@@ -138,7 +153,7 @@ const DriverLogin = () => {
         </CRow>
       </CContainer>
     </div>
-  );
-};
+  )
+}
 
-export default DriverLogin;
+export default DriverLogin
