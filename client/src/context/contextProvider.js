@@ -1,10 +1,16 @@
-import React from 'react'
-import { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, startTransition } from 'react'
 import PropTypes from 'prop-types'
+
 const StateContext = createContext()
 
 export const ContextProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
+  const [user, setUserState] = useState(null)
+  const setUser = (newUser) => {
+    startTransition(() => {
+      setUserState(newUser)
+    })
+  }
+
   return (
     <StateContext.Provider
       value={{
@@ -16,7 +22,9 @@ export const ContextProvider = ({ children }) => {
     </StateContext.Provider>
   )
 }
+
 ContextProvider.propTypes = {
   children: PropTypes.node.isRequired,
 }
+
 export const useStateContext = () => useContext(StateContext)

@@ -15,7 +15,7 @@ const DriverLogin = React.lazy(() => import('./views/driver/driverlogin'))
 const DriverTracking = React.lazy(() => import('./views/driver/drivertracking'))
 
 const App = () => {
-  const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const { isColorModeSet, setColorMode } = useColorModes('theme')
   const storedTheme = useSelector((state) => state.theme)
   const { user } = useStateContext()
 
@@ -72,7 +72,7 @@ const App = () => {
 
           {/* Dashboard / Home */}
           <Route
-            path="/"
+            path="/*"
             element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
           />
 
