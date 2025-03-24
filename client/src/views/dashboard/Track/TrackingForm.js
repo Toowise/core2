@@ -38,10 +38,10 @@ const TrackingForm = () => {
   const [mapInstance, setMapInstance] = useState(null)
   const { user } = useStateContext()
 
-  // 🔴 Connect WebSocket for Live Tracking
+  // Connect WebSocket for Live Tracking
   useEffect(() => {
     if (trackingNumber) {
-      socket.emit('joinTracking', trackingNumber) // Join WebSocket room
+      socket.emit('joinTracking', trackingNumber)
 
       socket.on('locationUpdate', (updatedShipment) => {
         console.log('Live location update received:', updatedShipment)
@@ -54,7 +54,8 @@ const TrackingForm = () => {
       })
 
       return () => {
-        socket.off('locationUpdate') // Cleanup WebSocket listener
+        socket.emit('leaveTracking', trackingNumber)
+        socket.off('locationUpdate')
       }
     }
   }, [trackingNumber])
@@ -155,7 +156,7 @@ const TrackingForm = () => {
           type="text"
           value={trackingNumber}
           onChange={(e) => setTrackingNumber(e.target.value)}
-          placeholder="Enter tracking number"
+          placeholder=" Enter tracking number "
         />
         <div className="track-btn">
           <button type="submit">Track</button>

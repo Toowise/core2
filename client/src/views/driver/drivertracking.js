@@ -15,8 +15,11 @@ const DriverTracking = () => {
   useEffect(() => {
     axios
       .get('/driver/shipments')
-      .then((response) => setShipments(response.data))
+      .then((response) => {
+        setShipments(Array.isArray(response.data) ? response.data : [])
+      })
       .catch((error) => console.error('Error fetching shipments:', error))
+    setShipments([]) // Ensure it remains an array
   }, [])
 
   useEffect(() => {
@@ -74,16 +77,20 @@ const DriverTracking = () => {
       <h2>Driver Tracking</h2>
       <h3>Select Shipments to Track:</h3>
       <ul>
-        {shipments.map((shipment) => (
-          <li key={shipment.trackingNumber}>
-            <input
-              type="checkbox"
-              checked={selectedShipments.includes(shipment.trackingNumber)}
-              onChange={() => handleShipmentSelect(shipment.trackingNumber)}
-            />
-            {shipment.trackingNumber} - {shipment.current_location}
-          </li>
-        ))}
+        {Array.isArray(shipments) && shipments.length > 0 ? (
+          shipments.map((shipment) => (
+            <li key={shipment.trackingNumber}>
+              <input
+                type="checkbox"
+                checked={selectedShipments.includes(shipment.trackingNumber)}
+                onChange={() => handleShipmentSelect(shipment.trackingNumber)}
+              />
+              {shipment.trackingNumber} - {shipment.current_location}
+            </li>
+          ))
+        ) : (
+          <p>Loading shipments or no shipments available.</p>
+        )}
       </ul>
 
       {location && (
