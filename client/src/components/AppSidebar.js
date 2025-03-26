@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-
+import { useNavigate } from 'react-router-dom'
 import {
   CCloseButton,
   CSidebar,
@@ -29,12 +29,12 @@ const AppSidebar = () => {
   const sidebarShow = useSelector((state) => state.sidebarShow)
   const { setUser } = useStateContext()
   const [showModal, setShowModal] = useState(false)
-
+  const navigate = useNavigate()
   // Function to handle logout
   const handleLogout = () => {
     sessionStorage.removeItem('token')
     setUser(null)
-    window.location.href = '/login'
+    navigate('/login')
   }
 
   // Function to show the confirmation modal

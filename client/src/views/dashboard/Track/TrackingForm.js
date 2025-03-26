@@ -9,7 +9,7 @@ import { useStateContext } from '../../../context/contextProvider.js'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../../config.js'
 
-const socket = io('http://localhost:5052') // Connect to WebSocket server
+const socket = io('https://backend-core2.axleshift.com') // Connect to WebSocket server
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {

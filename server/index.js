@@ -15,7 +15,11 @@ const PORT = process.env.PORT || 5052;
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server,{
+  cors: {
+    origin: 'https://core2.axleshift.com',
+  },
+});
 
 // Firebase Admin Initialization
 if (!admin.apps.length) {
@@ -24,7 +28,7 @@ if (!admin.apps.length) {
   });
 }
 
-app.use(cors({ origin: process.env.FRONTEND_URL || "*", credentials: true }));
+app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection

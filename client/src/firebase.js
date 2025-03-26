@@ -19,7 +19,6 @@ const firebaseConfig = {
   appId: VITE_APP_FIREBASE_APP_ID,
   measurementId: VITE_APP_FIREBASE_MEASUREMENT_ID,
 }
-console.log ('Firebase API KEY:', VITE_APP_FIREBASE_API_KEY)
 // Initialize Firebase
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)

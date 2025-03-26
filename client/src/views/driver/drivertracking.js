@@ -4,7 +4,7 @@ import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '/src/config.js'
 
-const socket = io('http://localhost:5052')
+const socket = io('https://backend-core2.axleshift.com')
 
 const DriverTracking = () => {
   const [shipments, setShipments] = useState([])
