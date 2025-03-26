@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import './ShipmentInfo.scss'
+import packageimg from './src/assets/images/package.jpg'
 
 const ShipmentInfo = ({ data }) => {
   const [showDetails, setShowDetails] = useState(false)
@@ -12,7 +13,7 @@ const ShipmentInfo = ({ data }) => {
       <div className="header">
         <h2 className="status">{data.status}</h2>
         <div className="package-info">
-          <img src="/src/assets/images/package.jpg" alt="Package" className="package-img" />
+          <img src={packageimg} alt="Package" className="package-img" />
           <div>
             <p className="carrier">Standard International</p>
             <p className="tracking-number">{data.trackingNumber}</p>

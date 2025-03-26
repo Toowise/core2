@@ -28,6 +28,7 @@ import {
   faSignature,
   faCheckCircle,
   faX,
+  faPaperPlane,
 } from '@fortawesome/free-solid-svg-icons'
 
 const Signup = () => {
@@ -43,6 +44,8 @@ const Signup = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [showVerifyButton, setShowVerifyButton] = useState(false)
+  const [isResending, setIsResending] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const navigate = useNavigate()
 
   // Handle input changes
@@ -123,6 +126,33 @@ const Signup = () => {
     } catch (error) {
       console.error('Verification check error:', error)
       setErrorMessage('Error checking verification status.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleResendVerificationEmail = async () => {
+    if (resendCooldown > 0) return // Prevent spam clicking
+
+    try {
+      setIsLoading(true)
+      await sendEmailVerification(auth.currentUser)
+      setSuccessMessage('Verification email sent again! Check your inbox.')
+
+      // Set cooldown to 60 seconds (1 min)
+      setResendCooldown(60)
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } catch (error) {
+      console.error('Resend Email Error:', error)
+      setErrorMessage('Too many requests. Please try again later.')
     } finally {
       setIsLoading(false)
     }
@@ -249,6 +279,14 @@ const Signup = () => {
                     </p>
                     <CButton onClick={checkEmailVerification} color="success">
                       Check Verification
+                    </CButton>
+                    <CButton
+                      onClick={handleResendVerificationEmail}
+                      color="warning"
+                      disabled={isResending}
+                    >
+                      {isResending ? <CSpinner size="sm" /> : 'Resend Email'}
+                      <FontAwesomeIcon icon={faPaperPlane} className="ms-2" />
                     </CButton>
                   </div>
                 )}

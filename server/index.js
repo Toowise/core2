@@ -8,6 +8,7 @@ const { Server } = require('socket.io');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const admin = require("firebase-admin");
+const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
 const User = require('./models/User'); 
 const Driver = require('./models/Driver');
@@ -295,11 +296,8 @@ io.on("connection", (socket) => {
 
 //  Email
 app.post("/verify-email", async (req, res) => {
-  const { email } = req.body;
-
   try {
-    console.log(` Checking email verification for: ${email}`);
-
+    const { email } = req.body;
     // Get user from Firebase
     const userRecord = await admin.auth().getUserByEmail(email);
     if (!userRecord) {
@@ -315,7 +313,6 @@ app.post("/verify-email", async (req, res) => {
       const updatedUser = await User.findOneAndUpdate(
         { email }, 
         { emailVerified: true }, 
-        { new: true }
       );
 
       if (!updatedUser) {
@@ -336,6 +333,37 @@ app.post("/verify-email", async (req, res) => {
   } catch (error) {
     console.error(" Email verification check error:", error);
     res.status(500).json({ success: false, message: "Server error. Please try again later." });
+  }
+});
+// Limit resend email requests
+const resendEmailLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 3, // 3 requests max per window
+  message: 'Too many requests. Please try again later.',
+});
+
+// Resend Verification Email Route
+app.post('/resend-verification', resendEmailLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    const userRecord = await admin.auth().getUserByEmail(email);
+
+    if (!userRecord) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (userRecord.emailVerified) {
+      return res.status(400).json({ message: "Email is already verified." });
+    }
+    // Generate verification email link
+    const verificationLink = await admin.auth().generateEmailVerificationLink(email);
+    
+    console.log(`Email verification link: ${verificationLink}`);
+
+    res.status(200).json({ message: 'Verification email resent successfully!' });
+  } catch (error) {
+    console.error('Resend Email Error:', error);
+    res.status(500).json({ message: 'Failed to resend email. Try again later.' });
   }
 });
 
