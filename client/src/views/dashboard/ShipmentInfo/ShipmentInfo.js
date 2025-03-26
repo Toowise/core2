@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import './ShipmentInfo.scss'
-import packageimg from './src/assets/images/package.jpg'
+import packageimg from './../../../assets/brand/package.jpg'
 
 const ShipmentInfo = ({ data }) => {
   const [showDetails, setShowDetails] = useState(false)
