@@ -11,9 +11,7 @@ import {
 } from '@coreui/react'
 import {
   cilBell,
-  cilCreditCard,
   cilEnvelopeOpen,
-  cilFile,
   cilLockLocked,
   cilSettings,
   cilUser,

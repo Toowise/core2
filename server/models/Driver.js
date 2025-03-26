@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const DriverSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -6,6 +7,12 @@ const DriverSchema = new mongoose.Schema({
   password: { type: String, required: true },
   userRole: { type: String, default: 'driver' },
   assignedShipments: [String],
+});
+
+DriverSchema.pre("save", async function(next) {
+  if (!this.isModified("password")) return next();
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
 
 const Driver = mongoose.model('Driver', DriverSchema);

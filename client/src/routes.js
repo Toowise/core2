@@ -2,9 +2,7 @@ import React from 'react'
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const TrackingForm = React.lazy(() => import('./views/dashboard/Track/TrackingForm'))
-const ShipmentHistory = React.lazy(
-  () => import('./views/dashboard/ShipmentHistory/ShipmentHistory'),
-)
+const ShipmentHistory = React.lazy(() => import('./views/dashboard/ShipmentHistory/ShipmentHistory'))
 const Signup = React.lazy(() => import('./views/pages/login/signup/Signup'))
 const DriverLogin = React.lazy(() => import('./views/driver/driverlogin'))
 const DriverTracking = React.lazy(() => import('./views/driver/drivertracking'))
@@ -23,7 +21,6 @@ const Layout = React.lazy(() => import('./views/forms/layout/Layout'))
 const Range = React.lazy(() => import('./views/forms/range/Range'))
 const Select = React.lazy(() => import('./views/forms/select/Select'))
 const Validation = React.lazy(() => import('./views/forms/validation/Validation'))
-
 const Charts = React.lazy(() => import('./views/charts/Charts'))
 
 // Icons
@@ -36,7 +33,6 @@ const Alerts = React.lazy(() => import('./views/notifications/alerts/Alerts'))
 const Badges = React.lazy(() => import('./views/notifications/badges/Badges'))
 const Modals = React.lazy(() => import('./views/notifications/modals/Modals'))
 const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
-
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 
 const routes = [
