@@ -4,7 +4,10 @@ import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '/src/config.js'
 
-const socket = io('https://backend-core2.axleshift.com')
+const socket = io('https://backend-core2.axleshift.com', {
+  transports: ['websocket', 'polling'],
+  withCredentials: true,
+})
 
 const DriverTracking = () => {
   const [shipments, setShipments] = useState([])
@@ -14,12 +17,11 @@ const DriverTracking = () => {
 
   useEffect(() => {
     axios
-      .get('/driver/shipments')
+      .get('https://backend-core2.axleshift.com/driver/shipments')
       .then((response) => {
         setShipments(Array.isArray(response.data) ? response.data : [])
       })
       .catch((error) => console.error('Error fetching shipments:', error))
-    setShipments([]) // Ensure it remains an array
   }, [])
 
   useEffect(() => {
@@ -31,7 +33,7 @@ const DriverTracking = () => {
 
           selectedShipments.forEach((trackingNumber) => {
             socket.emit('driverLocationUpdate', {
-              trackingNumber,
+              trackingNumber: [trackingNumber],
               latitude,
               longitude,
             })
@@ -62,7 +64,7 @@ const DriverTracking = () => {
 
       if (location && !prev.includes(trackingNumber)) {
         socket.emit('driverLocationUpdate', {
-          trackingNumber,
+          trackingNumber: [trackingNumber],
           latitude: location.latitude,
           longitude: location.longitude,
         })
@@ -76,22 +78,34 @@ const DriverTracking = () => {
     <div>
       <h2>Driver Tracking</h2>
       <h3>Select Shipments to Track:</h3>
-      <ul>
-        {Array.isArray(shipments) && shipments.length > 0 ? (
-          shipments.map((shipment) => (
-            <li key={shipment.trackingNumber}>
-              <input
-                type="checkbox"
-                checked={selectedShipments.includes(shipment.trackingNumber)}
-                onChange={() => handleShipmentSelect(shipment.trackingNumber)}
-              />
-              {shipment.trackingNumber} - {shipment.current_location}
-            </li>
-          ))
-        ) : (
-          <p>Loading shipments or no shipments available.</p>
-        )}
-      </ul>
+      {shipments.length > 0 ? (
+        <table border="1" cellPadding="10" style={{ width: '100%', textAlign: 'left' }}>
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Tracking Number</th>
+              <th>Delivery Address</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shipments.map((shipment) => (
+              <tr key={shipment.trackingNumber}>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={selectedShipments.includes(shipment.trackingNumber)}
+                    onChange={() => handleShipmentSelect(shipment.trackingNumber)}
+                  />
+                </td>
+                <td>{shipment.trackingNumber}</td>
+                <td>{shipment.deliveryAddress}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>Loading shipments or no shipments available.</p>
+      )}
 
       {location && (
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
