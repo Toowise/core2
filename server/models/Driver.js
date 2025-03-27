@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 const DriverSchema = new mongoose.Schema({
   username: { type: String, required: true },
@@ -11,7 +11,7 @@ const DriverSchema = new mongoose.Schema({
 
 DriverSchema.pre("save", async function(next) {
   if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcryptjs.hash(this.password, 10);
   next();
 });
 

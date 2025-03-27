@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
 const http = require('http');
-const { Server } = require('socket.io');
+const socketIo = require('socket.io');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const admin = require("firebase-admin");
@@ -16,9 +16,10 @@ const PORT = process.env.PORT || 5052;
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server,{
+const io = socketIo (server,{
   cors: {
-    origin: 'https://core2.axleshift.com',
+    origin: '*',
+    methods: ["GET", "POST"],
   },
 });
 
@@ -29,7 +30,7 @@ if (!admin.apps.length) {
   });
 }
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 // MongoDB Connection
@@ -230,35 +231,16 @@ app.post('/driverlogin', async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-// Middleware to Authenticate Driver
-const authenticateDriver = async (req, res, next) => {
-  const token = req.header('Authorization');
-  if (!token) return res.status(401).json({ success: false, message: "No token provided" });
-
-  try {
-    const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
-    
-    if (decoded.userRole !== 'driver') {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
-    }
-
-    req.driver = decoded;
-    next();
-  } catch (err) {
-    res.status(401).json({ success: false, message: "Invalid token" });
-  }
-};
 
 //Driver get shipments
-app.get('/driver/shipments', authenticateDriver, async (req, res) => {
+app.get('/driver/shipments', async (req, res) => {
   try {
-    // Assuming the driver has a field `assignedShipments` storing tracking numbers
-    const driverAssignedShipments = req.driver.assignedShipments; 
-    const shipments = await TrackData.find({ trackingNumber: { $in: driverAssignedShipments } });
-
-    res.json(shipments);
+    // Fetch all active tracking numbers and their delivery addresses
+    const activeShipments = await TrackData.find({}, { trackingNumber: 1, deliveryAddress: 1});
+    console.log("Active Shipments:", activeShipments);
+    res.json(activeShipments);
   } catch (error) {
-    console.error("Error fetching driver shipments:", error);
+    console.error("Error fetching active shipments:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -267,7 +249,7 @@ io.on("connection", (socket) => {
   console.log("Driver connected:", socket.id);
 
   socket.on("driverLocationUpdate", async (data) => {
-    console.log(` Location update received for ${data.trackingNumbers.join(", ")} - Lat: ${data.latitude}, Lng: ${data.longitude}`);
+    console.log(`Location update received for ${data.trackingNumbers[0]} - Lat: ${data.latitude}, Lng: ${data.longitude}`);
 
     try {
       // Update location in TrackData instead of Shipment
