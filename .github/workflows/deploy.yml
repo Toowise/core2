@@ -27,7 +27,7 @@ jobs:
             cd public_html
             cd client
             git add .
-            git commit -m "add missing files"
+            git commit -m "remove unnecessary files"
             git pull origin main
             npm install
             npm run build
