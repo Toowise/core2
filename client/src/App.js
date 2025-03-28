@@ -6,6 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import { useStateContext } from './context/contextProvider'
 import Signup from './views/pages/login/signup/Signup'
+import DriverLogin from './views/driver/driverlogin'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
