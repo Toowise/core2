@@ -5,6 +5,7 @@ const cors = require('cors');
 const axios = require('axios');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require("path");
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const admin = require("firebase-admin");
@@ -29,9 +30,14 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   });
 }
-
 app.use(cors({ origin: "*" }));
 app.use(express.json());
+// Serve frontend build files
+app.use(express.static(path.join(__dirname, "../client/build"))); 
+// Catch-all route to serve React's `index.html`
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});
 
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
@@ -257,7 +263,7 @@ io.on("connection", (socket) => {
 
   //  Leave the tracking room when a driver deselects a shipment
   socket.on("leaveTracking", (trackingNumber) => {
-    console.log(`🚪 Client left tracking room: ${trackingNumber}`);
+    console.log(` Client left tracking room: ${trackingNumber}`);
     socket.leave(trackingNumber);
   });
 
