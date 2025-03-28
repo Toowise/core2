@@ -20,7 +20,6 @@ body {
   background-color: white;
 }
 
-
 .container-fluid {
   width: 100%;
 }
@@ -80,7 +79,6 @@ h1 {
 .create-user-card button:hover {
   background-color: #e22b16;
 }
-
 
 .center-elements {
   padding: 16px;
@@ -185,11 +183,11 @@ button:hover {
   background-color: #d32f2f;
 }
 .modal-backdrop {
-  z-index: 1050; 
+  z-index: 1050;
 }
 
 .modal {
-  z-index: 2050 !important; 
+  z-index: 2050 !important;
 }
 
 .modal-overlay {
@@ -203,7 +201,6 @@ button:hover {
   justify-content: center;
   align-items: center;
 }
-
 
 .modal-content {
   background: white;
@@ -233,12 +230,12 @@ button:hover {
   z-index: 1000;
 }
 
-button[type="update"] {
+button[type='update'] {
   background-color: red;
   color: white;
 }
 
-button[type="cancel"] {
+button[type='cancel'] {
   background-color: red;
   color: white;
 }

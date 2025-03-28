@@ -47,7 +47,7 @@ const ShipmentInfo = ({ data }) => {
                 <div className="status-details">
                   <p className={`status-text ${index === 0 ? 'bold-text' : ''}`}>{event.status}</p>
                   <p className="date-time">
-                    {event.date} {event.time} - 📍 {data.current_location}
+                    {event.date} {event.time} - 📍 {event.location}
                   </p>
                 </div>
               </div>

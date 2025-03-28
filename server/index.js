@@ -73,6 +73,7 @@ const trackDataSchema = new mongoose.Schema({
       status: { type: String, required: true },
       date: { type: String, required: true },
       time: { type: String, required: true },
+      location: { type: String, required: true },
     },
   ],
 });
@@ -246,20 +247,42 @@ app.get('/driver/shipments', async (req, res) => {
 });
 //Driver Tracking
 io.on("connection", (socket) => {
-  console.log("Driver connected:", socket.id);
+  console.log(" Driver connected:", socket.id);
 
+  //  Join a tracking room when a driver selects a shipment
+  socket.on("joinTracking", (trackingNumber) => {
+    console.log(` Client joined tracking room: ${trackingNumber}`);
+    socket.join(trackingNumber);
+  });
+
+  //  Leave the tracking room when a driver deselects a shipment
+  socket.on("leaveTracking", (trackingNumber) => {
+    console.log(`🚪 Client left tracking room: ${trackingNumber}`);
+    socket.leave(trackingNumber);
+  });
+
+  //  Handle driver location updates
   socket.on("driverLocationUpdate", async (data) => {
-    console.log(`Location update received for ${data.trackingNumbers[0]} - Lat: ${data.latitude}, Lng: ${data.longitude}`);
+    console.log(" Received driver location update:", data);
+
+    const trackingNumbers = data.trackingNumbers || data.trackingNumber;
+
+    //  Ensure trackingNumbers is an array
+    if (!trackingNumbers || !Array.isArray(trackingNumbers) || trackingNumbers.length === 0) {
+      console.error(" Invalid or missing trackingNumbers:", data);
+      return;
+    }
 
     try {
-      // Update location in TrackData instead of Shipment
+      //  Update location in TrackData
       await TrackData.updateMany(
-        { trackingNumber: { $in: data.trackingNumbers } },
+        { trackingNumber: { $in: trackingNumbers } },
         { $set: { latitude: data.latitude, longitude: data.longitude, updated_at: new Date() } }
       );
 
-      // Notify clients tracking these shipments
-      data.trackingNumbers.forEach(trackingNumber => {
+      //  Broadcast updates **only to relevant tracking rooms**
+      trackingNumbers.forEach((trackingNumber) => {
+        console.log(` Broadcasting location update for ${trackingNumber}`);
         io.to(trackingNumber).emit("shipmentLocationUpdate", {
           trackingNumber,
           latitude: data.latitude,
@@ -267,12 +290,12 @@ io.on("connection", (socket) => {
         });
       });
     } catch (error) {
-      console.error("Error updating shipment location:", error);
+      console.error(" Error updating shipment location:", error);
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("Driver disconnected:", socket.id);
+    console.log(" Driver disconnected:", socket.id);
   });
 });
 

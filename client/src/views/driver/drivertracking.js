@@ -1,13 +1,29 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import PropTypes from 'prop-types'
+import axios from 'src/api/axios.js'
 import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
-import { VITE_APP_GOOGLE_MAP } from '/src/config.js'
+import { VITE_APP_GOOGLE_MAP } from '../../config.js'
 
-const socket = io('https://backend-core2.axleshift.com', {
+const socket = io('http://localhost:5052', {
   transports: ['websocket', 'polling'],
   withCredentials: true,
 })
+const MapCenterUpdater = ({ lat, lng, map }) => {
+  useEffect(() => {
+    if (map && lat && lng) {
+      map.panTo({ lat, lng })
+    }
+  }, [lat, lng, map])
+
+  return null
+}
+
+MapCenterUpdater.propTypes = {
+  lat: PropTypes.number.isRequired,
+  lng: PropTypes.number.isRequired,
+  map: PropTypes.object,
+}
 
 const DriverTracking = () => {
   const [shipments, setShipments] = useState([])
@@ -17,7 +33,7 @@ const DriverTracking = () => {
 
   useEffect(() => {
     axios
-      .get('https://backend-core2.axleshift.com/driver/shipments')
+      .get('/driver/shipments')
       .then((response) => {
         setShipments(Array.isArray(response.data) ? response.data : [])
       })
@@ -43,7 +59,7 @@ const DriverTracking = () => {
           console.error('Geolocation error:', error)
           alert('Location tracking is disabled. Please enable GPS.')
         },
-        { enableHighAccuracy: true, maximumAge: 10000 },
+        { enableHighAccuracy: true, maximumAge: 5000 },
       )
 
       return () => navigator.geolocation.clearWatch(watchId)
@@ -64,7 +80,9 @@ const DriverTracking = () => {
 
       if (location && !prev.includes(trackingNumber)) {
         socket.emit('driverLocationUpdate', {
-          trackingNumber: [trackingNumber],
+          trackingNumbers: Array.isArray(selectedShipments)
+            ? selectedShipments
+            : [selectedShipments],
           latitude: location.latitude,
           longitude: location.longitude,
         })
@@ -111,11 +129,18 @@ const DriverTracking = () => {
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
           <GoogleMap
             mapContainerStyle={{ height: '300px', width: '100%' }}
-            center={location}
-            zoom={13}
+            center={{ lat: location?.latitude, lng: location?.longitude }}
+            zoom={15}
             onLoad={(map) => setMapInstance(map)}
           >
-            <Marker position={location} />
+            <Marker position={{ lat: location?.latitude, lng: location?.longitude }} />
+            {mapInstance && (
+              <MapCenterUpdater
+                lat={location.latitude}
+                lng={location.longitude}
+                map={mapInstance}
+              />
+            )}
           </GoogleMap>
         </LoadScript>
       )}

@@ -9,8 +9,6 @@ import { useStateContext } from '../../../context/contextProvider.js'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../../config.js'
 
-const socket = io('https://backend-core2.axleshift.com') // Connect to WebSocket server
-
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
     if (map && lat && lng) {
@@ -37,28 +35,38 @@ const TrackingForm = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [mapInstance, setMapInstance] = useState(null)
   const { user } = useStateContext()
+  const [socket, setSocket] = useState(null)
+
+  useEffect(() => {
+    const newSocket = io('http://localhost:5052', { autoConnect: false })
+    setSocket(newSocket)
+    return () => {
+      newSocket.disconnect() // Cleanup on unmount
+    }
+  }, [])
 
   // Connect WebSocket for Live Tracking
   useEffect(() => {
-    if (trackingNumber) {
-      socket.emit('joinTracking', trackingNumber)
+    if (!trackingNumber || !socket) return
 
-      socket.on('locationUpdate', (updatedShipment) => {
-        console.log('Live location update received:', updatedShipment)
-        setShipmentData((prevData) => ({
-          ...prevData,
-          latitude: updatedShipment.latitude,
-          longitude: updatedShipment.longitude,
-          updated_at: new Date(updatedShipment.updated_at),
-        }))
-      })
+    socket.connect()
+    socket.emit('joinTracking', trackingNumber)
 
-      return () => {
-        socket.emit('leaveTracking', trackingNumber)
-        socket.off('locationUpdate')
-      }
+    socket.on('locationUpdate', (updatedShipment) => {
+      console.log('Live location update received:', updatedShipment)
+      setShipmentData((prevData) => ({
+        ...prevData,
+        latitude: updatedShipment.latitude,
+        longitude: updatedShipment.longitude,
+        updated_at: new Date(updatedShipment.updated_at),
+      }))
+    })
+
+    return () => {
+      socket.emit('leaveTracking', trackingNumber)
+      socket.off('locationUpdate')
     }
-  }, [trackingNumber])
+  }, [trackingNumber, socket])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
