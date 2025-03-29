@@ -1,5 +1,4 @@
-import React from 'react'
-
+import React, { useState } from 'react'
 import { CButton, CButtonGroup, CCard, CCardBody, CCol, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload } from '@coreui/icons'
@@ -7,29 +6,32 @@ import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
 
 const Dashboard = () => {
+  const [activeFilter, setActiveFilter] = useState('Month')
+
   return (
     <>
+      {/* Widgets Section */}
       <WidgetsDropdown className="mb-4" />
-      <CCard className="mb-4">
+
+      {/* Shipment Statistics Card */}
+      <CCard className="mb-4 shadow-sm">
         <CCardBody>
-          <CRow>
-            <CCol sm={5}>
-              <h4 id="traffic" className="card-title mb-0">
-                Current Shipment
-              </h4>
-              <div className="small text-body-secondary"></div>
+          <CRow className="align-items-center">
+            <CCol sm={6}>
+              <h4 id="traffic" className="card-title mb-1">Current Shipment</h4>
+              <div className="small text-muted">Updated just now</div>
             </CCol>
-            <CCol sm={7} className="d-none d-md-block">
-              <CButton color="primary" className="float-end">
-                <CIcon icon={cilCloudDownload} />
+            <CCol sm={6} className="d-flex justify-content-end">
+              <CButton color="primary" className="me-3">
+                <CIcon icon={cilCloudDownload} className="me-2" />
+                Export
               </CButton>
-              <CButtonGroup className="float-end me-3">
+              <CButtonGroup>
                 {['Day', 'Month', 'Year'].map((value) => (
                   <CButton
-                    color="outline-secondary"
                     key={value}
-                    className="mx-0"
-                    active={value === 'Month'}
+                    color={activeFilter === value ? 'primary' : 'outline-secondary'}
+                    onClick={() => setActiveFilter(value)}
                   >
                     {value}
                   </CButton>
@@ -37,7 +39,7 @@ const Dashboard = () => {
               </CButtonGroup>
             </CCol>
           </CRow>
-          <MainChart />
+          <MainChart filter={activeFilter} />
         </CCardBody>
       </CCard>
     </>
