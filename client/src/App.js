@@ -19,25 +19,26 @@ const App = () => {
   const storedTheme = useSelector((state) => state.theme)
   const { user } = useStateContext()
 
-  // Separate authentication for users & drivers
+  // State for driver authentication
   const [isDriverAuthenticated, setIsDriverAuthenticated] = useState(
-    !!sessionStorage.getItem('driverToken'),
+    !!sessionStorage.getItem('driverToken')
   )
 
   const isAuthenticated = user !== null
 
+  // Update authentication state if session storage changes
   useEffect(() => {
     const handleStorageChange = () => {
       setIsDriverAuthenticated(!!sessionStorage.getItem('driverToken'))
     }
 
     window.addEventListener('storage', handleStorageChange)
-
     return () => {
       window.removeEventListener('storage', handleStorageChange)
     }
   }, [])
 
+  // Set theme from URL params or Redux state
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const theme = urlParams.get('theme')?.match(/^[A-Za-z0-9\s]+/)[0]
@@ -47,7 +48,7 @@ const App = () => {
   }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
-    <Router>
+    <Router basename= "/">
       <Suspense
         fallback={
           <div className="d-flex justify-content-center align-items-center vh-100">
@@ -70,21 +71,15 @@ const App = () => {
             element={isDriverAuthenticated ? <DriverTracking /> : <Navigate to="/driverlogin" />}
           />
 
-          {/* Dashboard / Home */}
-          <Route
-            path="/*"
-            element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
-          />
-
           {/* Error Pages */}
           <Route path="/404" element={<Page404 />} />
           <Route path="/500" element={<Page500 />} />
 
-          {/* Catch-All Route */}
-          <Route
-            path="*"
-            element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
-          />
+          {/* Dashboard / Home */}
+          <Route path="/*" element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />} />
+
+          {/* Catch-All 404 Page */}
+          <Route path="*" element={<Page404 />} />
         </Routes>
       </Suspense>
     </Router>
