@@ -38,7 +38,7 @@ const TrackingForm = () => {
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5052', { autoConnect: false })
+    const newSocket = io('https://backend-core2.axleshift.com', { autoConnect: false })
     setSocket(newSocket)
     return () => {
       newSocket.disconnect() // Cleanup on unmount

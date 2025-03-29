@@ -5,7 +5,7 @@ import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../config.js'
 
-const socket = io('http://localhost:5052', {
+const socket = io('https://backend-core2.axleshift.com', {
   transports: ['websocket', 'polling'],
   withCredentials: true,
 })
@@ -75,17 +75,14 @@ const DriverTracking = () => {
   const handleShipmentSelect = (trackingNumber) => {
     setSelectedShipments((prev) => {
       const updatedList = prev.includes(trackingNumber)
-        ? prev.filter((num) => num !== trackingNumber)
-        : [...prev, trackingNumber]
+        ? prev.filter((num) => num !== trackingNumber)  // Deselecting a shipment
+        : [...prev, trackingNumber]  // Selecting a shipment
 
-      if (location && !prev.includes(trackingNumber)) {
-        socket.emit('driverLocationUpdate', {
-          trackingNumbers: Array.isArray(selectedShipments)
-            ? selectedShipments
-            : [selectedShipments],
-          latitude: location.latitude,
-          longitude: location.longitude,
-        })
+      //  Join tracking room when selected, leave when deselected
+      if (!prev.includes(trackingNumber)) {
+        socket.emit("joinTracking", trackingNumber) 
+      } else {
+        socket.emit("leaveTracking", trackingNumber) 
       }
 
       return updatedList
@@ -127,22 +124,16 @@ const DriverTracking = () => {
 
       {location && (
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
-          <GoogleMap
-            mapContainerStyle={{ height: '300px', width: '100%' }}
-            center={{ lat: location?.latitude, lng: location?.longitude }}
-            zoom={15}
-            onLoad={(map) => setMapInstance(map)}
-          >
-            <Marker position={{ lat: location?.latitude, lng: location?.longitude }} />
-            {mapInstance && (
-              <MapCenterUpdater
-                lat={location.latitude}
-                lng={location.longitude}
-                map={mapInstance}
-              />
-            )}
-          </GoogleMap>
-        </LoadScript>
+                <GoogleMap
+                  mapContainerStyle={{ height: '300px', width: '100%' }}
+                  center={{ lat: location?.latitude, lng: location?.longitude }}
+                  zoom={15}
+                  onLoad={(map) => setMapInstance(map)}
+                >
+                  <Marker position={{ lat: location?.latitude, lng: location?.longitude }} />
+                  {mapInstance && <MapCenterUpdater lat={location.latitude} lng={location.longitude} map={mapInstance} />}
+                </GoogleMap>
+              </LoadScript>
       )}
     </div>
   )
