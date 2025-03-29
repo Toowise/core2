@@ -75,14 +75,14 @@ const DriverTracking = () => {
   const handleShipmentSelect = (trackingNumber) => {
     setSelectedShipments((prev) => {
       const updatedList = prev.includes(trackingNumber)
-        ? prev.filter((num) => num !== trackingNumber)  // Deselecting a shipment
-        : [...prev, trackingNumber]  // Selecting a shipment
+        ? prev.filter((num) => num !== trackingNumber) // Deselecting a shipment
+        : [...prev, trackingNumber] // Selecting a shipment
 
       //  Join tracking room when selected, leave when deselected
       if (!prev.includes(trackingNumber)) {
-        socket.emit("joinTracking", trackingNumber) 
+        socket.emit('joinTracking', trackingNumber)
       } else {
-        socket.emit("leaveTracking", trackingNumber) 
+        socket.emit('leaveTracking', trackingNumber)
       }
 
       return updatedList
@@ -124,16 +124,22 @@ const DriverTracking = () => {
 
       {location && (
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
-                <GoogleMap
-                  mapContainerStyle={{ height: '300px', width: '100%' }}
-                  center={{ lat: location?.latitude, lng: location?.longitude }}
-                  zoom={15}
-                  onLoad={(map) => setMapInstance(map)}
-                >
-                  <Marker position={{ lat: location?.latitude, lng: location?.longitude }} />
-                  {mapInstance && <MapCenterUpdater lat={location.latitude} lng={location.longitude} map={mapInstance} />}
-                </GoogleMap>
-              </LoadScript>
+          <GoogleMap
+            mapContainerStyle={{ height: '300px', width: '100%' }}
+            center={{ lat: location?.latitude, lng: location?.longitude }}
+            zoom={15}
+            onLoad={(map) => setMapInstance(map)}
+          >
+            <Marker position={{ lat: location?.latitude, lng: location?.longitude }} />
+            {mapInstance && (
+              <MapCenterUpdater
+                lat={location.latitude}
+                lng={location.longitude}
+                map={mapInstance}
+              />
+            )}
+          </GoogleMap>
+        </LoadScript>
       )}
     </div>
   )
