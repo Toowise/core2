@@ -20,7 +20,6 @@ const server = http.createServer(app);
 const io = socketIo (server,{
   cors: {
     origin: '*',
-    methods: ["GET", "POST"],
   },
 });
 
@@ -32,12 +31,6 @@ if (!admin.apps.length) {
 }
 app.use(cors({ origin: "*" }));
 app.use(express.json());
-// Serve frontend build files
-app.use(express.static(path.join(__dirname, "../client/build"))); 
-// Catch-all route to serve React's `index.html`
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
 
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
@@ -231,7 +224,6 @@ app.post('/driverlogin', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' } // Token valid for 7 days
     );
-
     res.json({ success: true, token, driver: { id: driver._id, name: driver.name, email: driver.email } });
   } catch (error) {
     console.error("Driver login error:", error);
@@ -448,6 +440,12 @@ app.get('/history', async (req, res) => {
     console.error('Error fetching shipment data:', err);
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
+});
+// Serve frontend build files
+app.use(express.static(path.join(__dirname, "../client/build"))); 
+// Catch-all route to serve React's `index.html`
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 
 // Start Server

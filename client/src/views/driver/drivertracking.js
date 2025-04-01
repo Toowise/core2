@@ -5,7 +5,7 @@ import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../config.js'
 
-const socket = io('https://backend-core2.axleshift.com', {
+const socket = io('', {
   transports: ['websocket', 'polling'],
   withCredentials: true,
 })

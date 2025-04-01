@@ -4,8 +4,6 @@ import axios from '/src/api/axios.js'
 import io from 'socket.io-client'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
-import Modal from '../Modal.js'
-import { useStateContext } from '../../../context/contextProvider.js'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../../config.js'
 
@@ -28,17 +26,12 @@ MapCenterUpdater.propTypes = {
 const TrackingForm = () => {
   const [trackingNumber, setTrackingNumber] = useState('')
   const [shipmentData, setShipmentData] = useState(null)
-  const [carrier, setCarrier] = useState('')
-  const [contact, setContact] = useState('')
   const [zoom] = useState(13)
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [mapInstance, setMapInstance] = useState(null)
-  const { user } = useStateContext()
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
-    const newSocket = io('https://backend-core2.axleshift.com', { autoConnect: false })
+    const newSocket = io('', { autoConnect: false })
     setSocket(newSocket)
     return () => {
       newSocket.disconnect() // Cleanup on unmount
@@ -99,44 +92,6 @@ const TrackingForm = () => {
     }
   }
 
-  const handleUpdate = async (e) => {
-    e.preventDefault()
-    if (!shipmentData) {
-      alert('No shipment data to update.')
-      return
-    }
-
-    try {
-      const response = await axios.put('/shipments/update', {
-        trackingNumber,
-        carrier,
-        contact,
-      })
-
-      if (response.data) {
-        setShipmentData({ ...shipmentData, carrier, contact })
-        alert('Carrier and contact information updated successfully!')
-        setIsEditMode(false)
-        setIsModalOpen(false)
-      }
-    } catch (error) {
-      console.error('Error updating shipment data:', error)
-      alert('An error occurred while updating shipment data. Please try again later.')
-    }
-  }
-
-  const handleCancel = () => {
-    setIsEditMode(false)
-    setIsModalOpen(false)
-    setCarrier(shipmentData?.carrier || '')
-    setContact(shipmentData?.contact || '')
-  }
-
-  const toggleEditMode = () => {
-    setIsEditMode(!isEditMode)
-    setIsModalOpen(true)
-  }
-
   const renderMap = () => {
     if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
 
@@ -171,42 +126,8 @@ const TrackingForm = () => {
         </div>
       </form>
 
-      {shipmentData && user?.userRole === 'admin' && (
-        <div className="edit">
-          <button onClick={toggleEditMode}>{isEditMode ? 'Cancel' : 'Edit Carrier Info'}</button>
-        </div>
-      )}
-
       {shipmentData && <ShipmentInfo data={shipmentData} />}
       {renderMap()}
-
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <form onSubmit={handleUpdate} className="edit-form">
-          <h3>Update Carrier Info</h3>
-          <div>
-            <label>Carrier:</label>
-            <input
-              type="text"
-              value={carrier}
-              onChange={(e) => setCarrier(e.target.value)}
-              placeholder="Update Carrier"
-            />
-          </div>
-          <div>
-            <label>Contact Number:</label>
-            <input
-              type="text"
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
-              placeholder="Update Contact Number"
-            />
-          </div>
-          <button type="submit">Update Carrier Info</button>
-          <button type="button" onClick={handleCancel}>
-            Cancel
-          </button>
-        </form>
-      </Modal>
     </div>
   )
 }

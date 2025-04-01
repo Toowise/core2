@@ -13,7 +13,6 @@ const ShipmentHistory = () => {
       try {
         const response = await axios.get('/history')
         const data = response.data
-
         if (data.status === 'success') {
           setShipmentHistory(data.data)
         } else {
@@ -26,7 +25,6 @@ const ShipmentHistory = () => {
         setLoading(false)
       }
     }
-
     fetchShipmentHistory()
   }, [])
 

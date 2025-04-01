@@ -21,7 +21,7 @@ const App = () => {
 
   // State for driver authentication
   const [isDriverAuthenticated, setIsDriverAuthenticated] = useState(
-    !!sessionStorage.getItem('driverToken')
+    !!sessionStorage.getItem('driverToken'),
   )
 
   const isAuthenticated = user !== null
@@ -48,7 +48,7 @@ const App = () => {
   }, [isColorModeSet, setColorMode, storedTheme])
 
   return (
-    <Router basename= "/">
+    <Router basename="/">
       <Suspense
         fallback={
           <div className="d-flex justify-content-center align-items-center vh-100">
@@ -76,7 +76,10 @@ const App = () => {
           <Route path="/500" element={<Page500 />} />
 
           {/* Dashboard / Home */}
-          <Route path="/*" element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />} />
+          <Route
+            path="/*"
+            element={isAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
+          />
 
           {/* Catch-All 404 Page */}
           <Route path="*" element={<Page404 />} />
