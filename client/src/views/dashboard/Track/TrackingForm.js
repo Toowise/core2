@@ -45,7 +45,7 @@ const TrackingForm = () => {
     socket.connect()
     socket.emit('joinTracking', trackingNumber)
 
-    socket.on('locationUpdate', (updatedShipment) => {
+    socket.on('shipmentLocationUpdate', (updatedShipment) => {
       console.log('Live location update received:', updatedShipment)
       setShipmentData((prevData) => ({
         ...prevData,
