@@ -20,7 +20,6 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
 
-
 const DriverLogin = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -36,7 +35,7 @@ const DriverLogin = () => {
 
     try {
       // Send login request to the backend
-      const response = await axios.post('https://backend-core2.axleshift.com/driverlogin', {
+      const response = await axios.post('/driverlogin', {
         username,
         password,
       })

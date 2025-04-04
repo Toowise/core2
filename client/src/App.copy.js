@@ -64,15 +64,11 @@ const App = () => {
           {/* Driver Routes */}
           <Route
             path="/driverlogin"
-            element={
-              isDriverAuthenticated ? <Navigate to="/drivertracking" /> : <DriverLogin />
-            }
+            element={isDriverAuthenticated ? <Navigate to="/drivertracking" /> : <DriverLogin />}
           />
           <Route
             path="/drivertracking"
-            element={
-              isDriverAuthenticated ? <DriverTracking /> : <Navigate to="/driverlogin" />
-            }
+            element={isDriverAuthenticated ? <DriverTracking /> : <Navigate to="/driverlogin" />}
           />
 
           {/* Error Pages */}

@@ -22,7 +22,7 @@ const App = () => {
     !!sessionStorage.getItem('driverToken'),
   )
 
-  // State for driver authentication
+  // State for user authentication
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(
     !!sessionStorage.getItem('token'),
   )

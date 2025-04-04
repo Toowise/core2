@@ -20,6 +20,7 @@ const server = http.createServer(app);
 const io = socketIo (server,{
   cors: {
     origin: '*',
+    methods: ["GET", "POST"],
   },
 });
 
@@ -208,6 +209,7 @@ app.post("/signup", async (req, res) => {
 //Driver Login
 app.post('/driverlogin', async (req, res) => {
   const { username, password } = req.body;
+  console.log(`Incoming request: ${req.method} ${req.url}`);
 
   try {
     // Find driver by username
@@ -428,58 +430,48 @@ app.post('/track', async (req, res) => {
   }
 });
 // Notifications 
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
-  });
-});
-
-// List of locations considered as hubs, warehouses, or sorting centers
 const hubs = [
-  "Hub1",
+  "Fortis Residences",
   "Warehouse1",
   "Sorting Center A",
   "Sorting Center B",
   "Hub2",
   "Warehouse2"
 ];
+const lastKnownLocations = new Map();
+
+let dbReady = false;
 
 setInterval(async () => {
+  if (!dbReady) return;
+
   try {
-    const updatedShipments = await TrackData.find()
-      .sort({ updatedAt: -1 })
-      .limit(10);
+    const recentShipments = await TrackData.find().sort({ updatedAt: -1 }).limit(10);
 
-    updatedShipments.forEach((shipment) => {
-      // Check if the shipment's location is a hub/warehouse/sorting center
-      const isAtHub = hubs.includes(shipment.location);  // Check against the list of hubs
+    recentShipments.forEach((shipment) => {
+      if (!shipment.trackingId || !shipment.location) return;
+      const isAtHub = hubs.some(hub => hub.toLowerCase() === shipment.location.toLowerCase());
+      const lastLocation = lastKnownLocations.get(shipment.trackingNumber);
 
-      if (isAtHub) {
-        // Emit a notification if the shipment reaches a hub, warehouse, or sorting center
+      // Only notify if newly arrived at a hub (i.e., location changed)
+      if (isAtHub && lastLocation !== shipment.location) {
+        lastKnownLocations.set(shipment.trackingNumber, shipment.location); // update memory
+
         io.emit("shipmentUpdate", {
-          trackingId: shipment.trackingId,
+          trackingNumber: shipment.trackingNumber,
           status: shipment.status,
           location: shipment.location,
-          timestamp: shipment.updatedAt.toLocaleString(),
-          isAtHub: true, // Indicate that it is at a hub or sorting center
+          timestamp: new Date(shipment.updatedAt).toLocaleString(),
+          isAtHub: true,
         });
-      } else {
-        // Emit regular shipment update if it's not at a hub
-        io.emit("shipmentUpdate", {
-          trackingId: shipment.trackingId,
-          status: shipment.status,
-          location: shipment.location,
-          timestamp: shipment.updated_at.toLocaleString(),
-          isAtHub: false,
-        });
+
+        console.log(` Emitted hub update for ${shipment.trackingNumber} at ${shipment.location}`);
       }
     });
-  } catch (error) {
-    console.error("Error fetching tracking data:", error);
+  } catch (err) {
+    console.error(" Error during hub check:", err);
   }
-}, 10000); // every 10 seconds
+}, 10000);
 
 
 

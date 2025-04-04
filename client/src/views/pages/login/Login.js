@@ -29,7 +29,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { setUser } = useStateContext();
+  const { setUser } = useStateContext()
 
   const handleLogin = async (e) => {
     e.preventDefault()

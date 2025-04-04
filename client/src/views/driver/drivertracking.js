@@ -3,16 +3,9 @@ import PropTypes from 'prop-types'
 import axios from 'src/api/axios.js'
 import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
-import { VITE_APP_GOOGLE_MAP } from '../../config.js'
+import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../config.js'
 
-let BASE_URL
-if (import.meta.env.VITE_DEPLOYMENT_TYPE === 'local') {
-  BASE_URL = import.meta.env.VITE_BASE_URL_LOCAL
-} else if (import.meta.env.VITE_DEPLOYMENT_TYPE === 'production') {
-  BASE_URL = import.meta.env.VITE_BASE_URL_PRODUCTION
-}
-
-const socket = io(BASE_URL, {
+const socket = io(VITE_SOCKET_URL, {
   transports: ['websocket', 'polling'],
   withCredentials: true,
 })

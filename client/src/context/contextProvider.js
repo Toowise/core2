@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  startTransition,
-} from 'react'
+import React, { createContext, useContext, useState, useEffect, startTransition } from 'react'
 import PropTypes from 'prop-types'
 
 const StateContext = createContext()

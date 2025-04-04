@@ -14,7 +14,15 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilBell, cilMenu, cilList, cilEnvelopeOpen, cilSun, cilMoon, cilContrast } from '@coreui/icons'
+import {
+  cilBell,
+  cilMenu,
+  cilList,
+  cilEnvelopeOpen,
+  cilSun,
+  cilMoon,
+  cilContrast,
+} from '@coreui/icons'
 import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
 
@@ -32,28 +40,30 @@ const AppHeader = () => {
   useEffect(() => {
     document.addEventListener('scroll', () => {
       headerRef.current &&
-        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0);
-    });
-  
+        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
+    })
+
     // Listen for real-time shipment updates
     socket.on('shipmentUpdate', (update) => {
       // If the shipment is at a hub or sorting center, display a special notification
       if (update.isAtHub) {
-        setNotifications((prev) => [{
-          ...update,
-          message: `Shipment arrived at ${update.location}!`  
-        }, ...prev]);
+        setNotifications((prev) => [
+          {
+            ...update,
+            message: `Shipment arrived at ${update.location}!`,
+          },
+          ...prev,
+        ])
       } else {
         // Regular shipment update
-        setNotifications((prev) => [update, ...prev]);
+        setNotifications((prev) => [update, ...prev])
       }
-  
-      setUnreadCount((prev) => prev + 1);
-    });
-  
-    return () => socket.off('shipmentUpdate');
-  }, []);
-  
+
+      setUnreadCount((prev) => prev + 1)
+    })
+
+    return () => socket.off('shipmentUpdate')
+  }, [])
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible)
