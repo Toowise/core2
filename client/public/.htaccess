@@ -6,6 +6,9 @@
   RewriteRule ^\.htaccess /index.html [L]
   RewriteRule ^\assets$ /index.html [L]
 
+  RewriteCond %{REQUEST_URI} ^/driverlogin [NC]
+  RewriteRule ^ - [L]
+
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteRule . /index.html [L]
