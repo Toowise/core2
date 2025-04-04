@@ -21,19 +21,17 @@ import logoImage from 'src/assets/brand/logo.png'
 
 // sidebar nav config
 import navigation from '../_nav'
-import { useStateContext } from '../context/contextProvider' // Import the context
 
 const AppSidebar = () => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
-  const { setUser } = useStateContext()
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
   // Function to handle logout
   const handleLogout = () => {
     sessionStorage.removeItem('token')
-    setUser(null)
+    window.dispatchEvent(new Event('storage'))
     navigate('/login')
   }
 

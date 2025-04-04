@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'src/api/axios.js'
 import { useNavigate } from 'react-router-dom'
-import { useStateContext } from '../../../context/contextProvider'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
 import {
@@ -21,14 +20,17 @@ import {
   CSpinner,
 } from '@coreui/react'
 import './Login.scss'
+import { useStateContext } from '../../../context/contextProvider'
+
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { setUser } = useStateContext()
   const navigate = useNavigate()
+  const { setUser } = useStateContext();
+
   const handleLogin = async (e) => {
     e.preventDefault()
     setIsLoading(true)
@@ -36,25 +38,26 @@ const Login = () => {
 
     try {
       const response = await axios.post('/login', { username, password })
-      console.log('Login response:', response.data)
-
       const { token, user } = response.data
 
       if (token) {
+        // Store token
         sessionStorage.setItem('token', token)
 
-        const loggedInUser = {
-          username: user.username,
-          userRole: user.userRole,
-        }
+        // Optional: store minimal user info
+        sessionStorage.setItem('user', JSON.stringify(user))
 
-        setUser(loggedInUser)
+        // Notify app
+        window.dispatchEvent(new Event('storage'))
+
+        // Navigate to dashboard
+        navigate('/')
       } else {
         setErrorMessage('Invalid credentials')
       }
     } catch (err) {
-      setErrorMessage('Login failed. Please try again.')
       console.error(err)
+      setErrorMessage('Login failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -80,7 +83,7 @@ const Login = () => {
                 )}
                 <CForm onSubmit={handleLogin}>
                   <h1>Login</h1>
-                  <p className="text-body-secondary">Sign In to your account</p>
+                  <p className="text-body-secondary">Sign in to your account</p>
                   <CInputGroup className="mb-3">
                     <CInputGroupText>
                       <FontAwesomeIcon icon={faUser} />
@@ -149,7 +152,7 @@ const Login = () => {
                   <CButton
                     color="link"
                     className="px-0 text-primary"
-                    onClick={() => console.log('Forgot password link clicked')}
+                    onClick={() => console.log('Forgot password clicked')}
                   >
                     Forgot password?
                   </CButton>

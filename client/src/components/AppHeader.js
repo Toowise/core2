@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react'
-import { NavLink } from 'react-router-dom'
+import React, { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   CContainer,
@@ -15,71 +14,93 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilContrast,
-  cilEnvelopeOpen,
-  cilList,
-  cilMenu,
-  cilMoon,
-  cilSun,
-} from '@coreui/icons'
-
-import { AppBreadcrumb } from './index'
+import { cilBell, cilMenu, cilList, cilEnvelopeOpen, cilSun, cilMoon, cilContrast } from '@coreui/icons'
+import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
+
+const socket = io('http://localhost:5052') // Change this to your backend URL
 
 const AppHeader = () => {
   const headerRef = useRef()
-  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
+  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [dropdownVisible, setDropdownVisible] = useState(false) // ✅ State to toggle dropdown
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
       headerRef.current &&
-        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
-    })
-  }, [])
+        headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0);
+    });
+  
+    // Listen for real-time shipment updates
+    socket.on('shipmentUpdate', (update) => {
+      // If the shipment is at a hub or sorting center, display a special notification
+      if (update.isAtHub) {
+        setNotifications((prev) => [{
+          ...update,
+          message: `Shipment arrived at ${update.location}!`  
+        }, ...prev]);
+      } else {
+        // Regular shipment update
+        setNotifications((prev) => [update, ...prev]);
+      }
+  
+      setUnreadCount((prev) => prev + 1);
+    });
+  
+    return () => socket.off('shipmentUpdate');
+  }, []);
+  
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible)
+    setUnreadCount(0) // ✅ Reset unread count when opened
+  }
 
   return (
     <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
       <CContainer className="border-bottom px-4" fluid>
-        <CHeaderToggler
-          onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
-          style={{ marginInlineStart: '-14px' }}
-        >
+        <CHeaderToggler onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}>
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav className="d-none d-md-flex">
-          <CNavItem>
-            <CNavLink to="/dashboard" as={NavLink}>
-              Dashboard
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">Users</CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">Settings</CNavLink>
-          </CNavItem>
-        </CHeaderNav>
+
         <CHeaderNav className="ms-auto">
-          <CNavItem>
-            <CNavLink href="#">
+          {/* 🚀 Notification Dropdown */}
+          <CDropdown variant="nav-item" visible={dropdownVisible} onClick={toggleDropdown}>
+            <CDropdownToggle caret={false}>
               <CIcon icon={cilBell} size="lg" />
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilList} size="lg" />
-            </CNavLink>
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilEnvelopeOpen} size="lg" />
-            </CNavLink>
-          </CNavItem>
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    backgroundColor: 'red',
+                    color: 'white',
+                    borderRadius: '50%',
+                    padding: '3px 7px',
+                    fontSize: '12px',
+                    position: 'absolute',
+                    top: '5px',
+                    right: '5px',
+                  }}
+                >
+                  {unreadCount}
+                </span>
+              )}
+            </CDropdownToggle>
+            <CDropdownMenu>
+              {notifications.length === 0 ? (
+                <CDropdownItem disabled>No new notifications</CDropdownItem>
+              ) : (
+                notifications.map((notif, index) => (
+                  <CDropdownItem key={index}>
+                    📦 {notif.status} - {notif.timestamp}
+                  </CDropdownItem>
+                ))
+              )}
+            </CDropdownMenu>
+          </CDropdown>
         </CHeaderNav>
         <CHeaderNav>
           <li className="nav-item py-1">
@@ -130,9 +151,6 @@ const AppHeader = () => {
           </li>
           <AppHeaderDropdown />
         </CHeaderNav>
-      </CContainer>
-      <CContainer className="px-4" fluid>
-        <AppBreadcrumb />
       </CContainer>
     </CHeader>
   )

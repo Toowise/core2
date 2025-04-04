@@ -7,6 +7,13 @@ import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP } from '../../../config.js'
 
+let BASE_URL
+if (import.meta.env.VITE_DEPLOYMENT_TYPE === 'local') {
+  BASE_URL = import.meta.env.VITE_BASE_URL_LOCAL
+} else if (import.meta.env.VITE_DEPLOYMENT_TYPE === 'production') {
+  BASE_URL = import.meta.env.VITE_BASE_URL_PRODUCTION
+}
+
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
     if (map && lat && lng) {
@@ -31,7 +38,7 @@ const TrackingForm = () => {
   const [socket, setSocket] = useState(null)
 
   useEffect(() => {
-    const newSocket = io('', { autoConnect: false })
+    const newSocket = io(BASE_URL, { autoConnect: false })
     setSocket(newSocket)
     return () => {
       newSocket.disconnect() // Cleanup on unmount
@@ -84,8 +91,6 @@ const TrackingForm = () => {
         updated_at: new Date(data.updated_at),
         expected_delivery: new Date(data.expected_delivery),
       })
-      setCarrier(data.carrier)
-      setContact(data.contact)
     } catch (error) {
       console.error('Error fetching shipment data:', error)
       alert('An error occurred while fetching shipment data. Please try again later.')
@@ -114,6 +119,8 @@ const TrackingForm = () => {
 
   return (
     <div>
+      <h2>Axleshift Package Tracking</h2>
+      <div className="subheader">Input your tracking number</div>
       <form onSubmit={handleSubmit} className="center-elements">
         <input
           type="text"

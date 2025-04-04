@@ -224,7 +224,7 @@ app.post('/driverlogin', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' } // Token valid for 7 days
     );
-    res.json({ success: true, token, driver: { id: driver._id, name: driver.name, email: driver.email } });
+    res.json({ success: true, token, driver: { id: driver._id, username: driver.username, email: driver.email } });
   } catch (error) {
     console.error("Driver login error:", error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -427,6 +427,61 @@ app.post('/track', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 });
+// Notifications 
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+// List of locations considered as hubs, warehouses, or sorting centers
+const hubs = [
+  "Hub1",
+  "Warehouse1",
+  "Sorting Center A",
+  "Sorting Center B",
+  "Hub2",
+  "Warehouse2"
+];
+
+setInterval(async () => {
+  try {
+    const updatedShipments = await TrackData.find()
+      .sort({ updatedAt: -1 })
+      .limit(10);
+
+    updatedShipments.forEach((shipment) => {
+      // Check if the shipment's location is a hub/warehouse/sorting center
+      const isAtHub = hubs.includes(shipment.location);  // Check against the list of hubs
+
+      if (isAtHub) {
+        // Emit a notification if the shipment reaches a hub, warehouse, or sorting center
+        io.emit("shipmentUpdate", {
+          trackingId: shipment.trackingId,
+          status: shipment.status,
+          location: shipment.location,
+          timestamp: shipment.updatedAt.toLocaleString(),
+          isAtHub: true, // Indicate that it is at a hub or sorting center
+        });
+      } else {
+        // Emit regular shipment update if it's not at a hub
+        io.emit("shipmentUpdate", {
+          trackingId: shipment.trackingId,
+          status: shipment.status,
+          location: shipment.location,
+          timestamp: shipment.updatedAt.toLocaleString(),
+          isAtHub: false,
+        });
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching tracking data:", error);
+  }
+}, 10000); // every 10 seconds
+
+
 
 app.get('/history', async (req, res) => {
   try {

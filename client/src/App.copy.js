@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import 'leaflet/dist/leaflet.css'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
+import { useStateContext } from './context/contextProvider'
 import Signup from './views/pages/login/signup/Signup'
 
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -17,30 +18,23 @@ const App = () => {
   const { isColorModeSet, setColorMode } = useColorModes('theme')
   const storedTheme = useSelector((state) => state.theme)
 
-  // State for driver authentication
-  const [isDriverAuthenticated, setIsDriverAuthenticated] = useState(
-    !!sessionStorage.getItem('driverToken'),
-  )
+  const [isDriverAuthenticated, setIsDriverAuthenticated] = useState(false)
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false)
 
-  // State for driver authentication
-  const [isUserAuthenticated, setIsUserAuthenticated] = useState(
-    !!sessionStorage.getItem('token'),
-  )
-
-  // Update authentication state if session storage changes
+  // Sync auth states with sessionStorage
   useEffect(() => {
-    const handleStorageChange = () => {
-      setIsUserAuthenticated(!!sessionStorage.getItem('token'))
+    const updateAuthStates = () => {
       setIsDriverAuthenticated(!!sessionStorage.getItem('driverToken'))
+      setIsUserAuthenticated(!!sessionStorage.getItem('token'))
     }
 
-    window.addEventListener('storage', handleStorageChange)
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-    }
+    updateAuthStates()
+
+    window.addEventListener('storage', updateAuthStates)
+    return () => window.removeEventListener('storage', updateAuthStates)
   }, [])
 
-  // Set theme from URL params or Redux state
+  // Set theme on load
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const theme = urlParams.get('theme')?.match(/^[A-Za-z0-9\s]+/)[0]
@@ -59,31 +53,31 @@ const App = () => {
         }
       >
         <Routes>
-          {/* User Authentication */}
+          {/* User Routes */}
           <Route path="/login" element={isUserAuthenticated ? <Navigate to="/" /> : <Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/"
+            element={isUserAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
+          />
 
-          {/* Driver Authentication */}
+          {/* Driver Routes */}
           <Route
             path="/driverlogin"
-            element={isDriverAuthenticated ? <Navigate to="/drivertracking" /> : <DriverLogin />}
+            element={
+              isDriverAuthenticated ? <Navigate to="/drivertracking" /> : <DriverLogin />
+            }
           />
           <Route
             path="/drivertracking"
-            element={isDriverAuthenticated ? <DriverTracking /> : <Navigate to="/driverlogin" />}
+            element={
+              isDriverAuthenticated ? <DriverTracking /> : <Navigate to="/driverlogin" />
+            }
           />
 
           {/* Error Pages */}
           <Route path="/404" element={<Page404 />} />
           <Route path="/500" element={<Page500 />} />
-
-          {/* Dashboard / Home */}
-          <Route
-            path="/*"
-            element={isUserAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
-          />
-
-          {/* Catch-All 404 Page */}
           <Route path="*" element={<Page404 />} />
         </Routes>
       </Suspense>
