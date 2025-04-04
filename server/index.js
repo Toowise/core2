@@ -30,7 +30,11 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   });
 }
-app.use(cors({ origin: "*" }));
+app.use(cors({
+  origin: "https://core2.axleshift.com", 
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
 // MongoDB Connection
