@@ -23,9 +23,6 @@ const io = socketIo (server,{
     methods: ["GET", "POST"],
   },
 });
-const allowedOrigins = ['https://core2.axleshift.com'];
-
-
 
 // Firebase Admin Initialization
 if (!admin.apps.length) {
@@ -33,19 +30,7 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   });
 }
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-app.options('*', cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 // MongoDB Connection
@@ -464,7 +449,6 @@ setInterval(async () => {
     const recentShipments = await TrackData.find().sort({ updatedAt: -1 }).limit(10);
 
     recentShipments.forEach((shipment) => {
-      if (!shipment.trackingId || !shipment.location) return;
       const isAtHub = hubs.some(hub => hub.toLowerCase() === shipment.location.toLowerCase());
       const lastLocation = lastKnownLocations.get(shipment.trackingNumber);
 

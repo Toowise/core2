@@ -4,11 +4,13 @@ import axios from 'src/api/axios.js'
 import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../config.js'
+import './drivertracking.css' 
 
 const socket = io(VITE_SOCKET_URL, {
   transports: ['websocket', 'polling'],
   withCredentials: true,
 })
+
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
     if (map && lat && lng) {
@@ -75,10 +77,9 @@ const DriverTracking = () => {
   const handleShipmentSelect = (trackingNumber) => {
     setSelectedShipments((prev) => {
       const updatedList = prev.includes(trackingNumber)
-        ? prev.filter((num) => num !== trackingNumber) // Deselecting a shipment
-        : [...prev, trackingNumber] // Selecting a shipment
+        ? prev.filter((num) => num !== trackingNumber)
+        : [...prev, trackingNumber]
 
-      //  Join tracking room when selected, leave when deselected
       if (!prev.includes(trackingNumber)) {
         socket.emit('joinTracking', trackingNumber)
       } else {
@@ -90,11 +91,11 @@ const DriverTracking = () => {
   }
 
   return (
-    <div>
+    <div className="driver-tracking-container">
       <h2>Driver Tracking</h2>
       <h3>Select Shipments to Track:</h3>
       {shipments.length > 0 ? (
-        <table border="1" cellPadding="10" style={{ width: '100%', textAlign: 'left' }}>
+        <table>
           <thead>
             <tr>
               <th>Select</th>
@@ -125,12 +126,12 @@ const DriverTracking = () => {
       {location && (
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
           <GoogleMap
-            mapContainerStyle={{ height: '300px', width: '100%' }}
-            center={{ lat: location?.latitude, lng: location?.longitude }}
+            mapContainerClassName="map-container"
+            center={{ lat: location.latitude, lng: location.longitude }}
             zoom={15}
             onLoad={(map) => setMapInstance(map)}
           >
-            <Marker position={{ lat: location?.latitude, lng: location?.longitude }} />
+            <Marker position={{ lat: location.latitude, lng: location.longitude }} />
             {mapInstance && (
               <MapCenterUpdater
                 lat={location.latitude}
