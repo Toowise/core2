@@ -36,7 +36,7 @@ const DriverLogin = () => {
 
     try {
       // Send login request to the backend
-      const response = await axios.post('/driverlogin', {
+      const response = await axios.post('https://backend-core2.axleshift.com/driverlogin', {
         username,
         password,
       })

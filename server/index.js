@@ -471,7 +471,7 @@ setInterval(async () => {
           trackingId: shipment.trackingId,
           status: shipment.status,
           location: shipment.location,
-          timestamp: shipment.updatedAt.toLocaleString(),
+          timestamp: shipment.updated_at.toLocaleString(),
           isAtHub: false,
         });
       }
