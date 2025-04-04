@@ -18,7 +18,7 @@ import {
 } from '@coreui/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
-import axios from '../../api/axios'
+import axios from '/src/api/axios.js'
 
 const DriverLogin = () => {
   const [username, setUsername] = useState('')
