@@ -1,47 +1,46 @@
 .driver-tracking-container {
-    padding: 20px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
-  }
-  
-  .driver-tracking-container h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
-  
-  .driver-tracking-container h3 {
-    font-size: 18px;
-    margin: 20px 0 10px;
-  }
-  
-  .driver-tracking-container table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-    background-color: #fafafa;
-  }
-  
-  .driver-tracking-container th,
-  .driver-tracking-container td {
-    border: 1px solid #ccc;
-    padding: 12px 10px;
-  }
-  
-  .driver-tracking-container th {
-    background-color: #f0f0f0;
-    font-weight: bold;
-  }
-  
-  .driver-tracking-container input[type='checkbox'] {
-    transform: scale(1.2);
-    cursor: pointer;
-  }
-  
-  .driver-tracking-container .map-container {
-    width: 100%;
-    height: 300px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.driver-tracking-container h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.driver-tracking-container h3 {
+  font-size: 18px;
+  margin: 20px 0 10px;
+}
+
+.driver-tracking-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: #fafafa;
+}
+
+.driver-tracking-container th,
+.driver-tracking-container td {
+  border: 1px solid #ccc;
+  padding: 12px 10px;
+}
+
+.driver-tracking-container th {
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.driver-tracking-container input[type='checkbox'] {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.driver-tracking-container .map-container {
+  width: 100%;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

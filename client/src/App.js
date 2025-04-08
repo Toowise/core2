@@ -23,9 +23,7 @@ const App = () => {
   )
 
   // State for user authentication
-  const [isUserAuthenticated, setIsUserAuthenticated] = useState(
-    !!sessionStorage.getItem('token')
-  )
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(!!sessionStorage.getItem('token'))
 
   // Update authentication state if session storage changes
   useEffect(() => {

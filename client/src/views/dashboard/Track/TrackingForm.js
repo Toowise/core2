@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import axios from '/src/api/axios.js'
 import io from 'socket.io-client'
@@ -29,6 +29,7 @@ const TrackingForm = () => {
   const [zoom] = useState(13)
   const [mapInstance, setMapInstance] = useState(null)
   const [socket, setSocket] = useState(null)
+  const markerRef = useRef(null)
 
   useEffect(() => {
     const newSocket = io(VITE_SOCKET_URL, { autoConnect: false })
@@ -90,6 +91,35 @@ const TrackingForm = () => {
     }
   }
 
+  const animateMarker = (toLat, toLng) => {
+    if (!markerRef.current) return
+    const marker = markerRef.current
+    const start = marker.getPosition()
+    const end = new window.google.maps.LatLng(toLat, toLng)
+
+    const steps = 60
+    let i = 0
+
+    const deltaLat = (end.lat() - start.lat()) / steps
+    const deltaLng = (end.lng() - start.lng()) / steps
+
+    const move = () => {
+      i++
+      const lat = start.lat() + deltaLat * i
+      const lng = start.lng() + deltaLng * i
+      marker.setPosition(new window.google.maps.LatLng(lat, lng))
+      if (i < steps) requestAnimationFrame(move)
+    }
+
+    move()
+  }
+
+  useEffect(() => {
+    if (shipmentData && markerRef.current) {
+      animateMarker(shipmentData.latitude, shipmentData.longitude)
+    }
+  }, [shipmentData?.latitude, shipmentData?.longitude])
+
   const renderMap = () => {
     if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
 
@@ -103,7 +133,18 @@ const TrackingForm = () => {
           zoom={zoom}
           onLoad={(map) => setMapInstance(map)}
         >
-          <Marker position={{ lat: latitude, lng: longitude }} />
+          <Marker
+            position={{ lat: latitude, lng: longitude }}
+            onLoad={(marker) => (markerRef.current = marker)}
+            icon={
+              window.google?.maps
+                ? {
+                    url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
+                    scaledSize: new window.google.maps.Size(40, 40),
+                  }
+                : undefined
+            }
+          />
           {mapInstance && <MapCenterUpdater lat={latitude} lng={longitude} map={mapInstance} />}
         </GoogleMap>
       </LoadScript>
