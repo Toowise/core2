@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from '/src/api/axios.js'
+import axios from '../../../api/axios'
 import { ring } from 'ldrs'
 ring.register()
 import { useStateContext } from '../../../context/contextProvider'

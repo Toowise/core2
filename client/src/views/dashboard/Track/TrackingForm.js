@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import axios from '/src/api/axios.js'
+import axios from '../../../api/axios.js'
 import io from 'socket.io-client'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'

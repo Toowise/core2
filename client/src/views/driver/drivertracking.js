@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import axios from 'src/api/axios.js'
+import axios from '../../api/axios.js'
 import io from 'socket.io-client'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../config.js'
