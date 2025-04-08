@@ -263,37 +263,47 @@ io.on("connection", (socket) => {
 
   //  Handle driver location updates
   socket.on("driverLocationUpdate", async (data) => {
-    console.log(" Received driver location update:", data);
-
-    const trackingNumbers = data.trackingNumbers || data.trackingNumber;
-
-    //  Ensure trackingNumbers is an array
-    if (!trackingNumbers || !Array.isArray(trackingNumbers) || trackingNumbers.length === 0) {
-      console.error(" Invalid or missing trackingNumbers:", data);
+    console.log("Received driver location update:", data);
+  
+    // Normalize trackingNumber(s) to array
+    const trackingNumbers = Array.isArray(data.trackingNumber)
+      ? data.trackingNumber
+      : [data.trackingNumber];
+  
+    if (!trackingNumbers.length) {
+      console.error("Invalid or missing trackingNumbers:", data);
       return;
     }
-
+  
     try {
-      //  Update location in TrackData
+      // Update all matching TrackData entries
+      const updatedAt = new Date();
       await TrackData.updateMany(
         { trackingNumber: { $in: trackingNumbers } },
-        { $set: { latitude: data.latitude, longitude: data.longitude, updated_at: new Date() } }
+        {
+          $set: {
+            latitude: data.latitude,
+            longitude: data.longitude,
+            updated_at: updatedAt,
+          },
+        }
       );
-
-      //  Broadcast updates **only to relevant tracking rooms**
+  
+      // Broadcast updates to rooms
       trackingNumbers.forEach((trackingNumber) => {
-        console.log(` Broadcasting location update for ${trackingNumber}`);
+        console.log(`Broadcasting location update for ${trackingNumber}`);
         io.to(trackingNumber).emit("shipmentLocationUpdate", {
           trackingNumber,
           latitude: data.latitude,
-          longitude: data.longitude
+          longitude: data.longitude,
+          updated_at: updatedAt,
         });
       });
     } catch (error) {
-      console.error(" Error updating shipment location:", error);
+      console.error("Error updating shipment location:", error);
     }
   });
-
+  
   socket.on("disconnect", () => {
     console.log(" Driver disconnected:", socket.id);
   });
