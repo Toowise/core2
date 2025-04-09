@@ -21,7 +21,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no corea8702@157.173.111.118 -p 2298
 
-      - name: Deploy to Server
+      - name: Deploy to Client
         run: |
           ssh -o StrictHostKeyChecking=no corea8702@157.173.111.118 -p 2298 << 'EOF'
             cd public_html
@@ -29,4 +29,14 @@ jobs:
             git pull origin main
             npm install
             npm run build
-          EOF
+
+      - name: Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no backe6897@185.44.65.133 -p 2298 << 'EOF'
+            cd public_html
+            cd server
+            git pull origin main
+            npm install
+            npm run build
+            EOF
+      
