@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import { VITE_SOCKET_URL } from '../config'
 import {
   CContainer,
   CDropdown,
@@ -9,16 +10,12 @@ import {
   CHeader,
   CHeaderNav,
   CHeaderToggler,
-  CNavLink,
-  CNavItem,
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
   cilBell,
   cilMenu,
-  cilList,
-  cilEnvelopeOpen,
   cilSun,
   cilMoon,
   cilContrast,
@@ -26,7 +23,7 @@ import {
 import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
 
-const socket = io('http://localhost:5052') // Change this to your backend URL
+const socket = io(VITE_SOCKET_URL) 
 
 const AppHeader = () => {
   const headerRef = useRef()
