@@ -23,7 +23,7 @@ jobs:
 
       - name: Deploy to Client
         run: |
-          ssh -o StrictHostKeyChecking=no corea8702@157.173.111.118 -p 2298 << 'EOF'
+          ssh -o StrictHostKeyChecking=no corea8702@157.173.111.118 -p 2298 
             cd public_html
             cd client
             git pull origin main
