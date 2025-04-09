@@ -427,8 +427,6 @@ app.post('/track', async (req, res) => {
         updated_at: shipment.updated_at,
         latitude: Number(shipment.latitude),
         longitude: Number(shipment.longitude),
-        carrier: shipment.carrier,
-        contact: shipment.contact,
         events: shipment.events,
       });
     } else {
@@ -481,8 +479,6 @@ setInterval(async () => {
     console.error(" Error during hub check:", err);
   }
 }, 10000);
-
-
 
 app.get('/history', async (req, res) => {
   try {
