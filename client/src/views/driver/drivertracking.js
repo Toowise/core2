@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import axios from '../../api/axios.js'
 import io from 'socket.io-client'
+import { signOut } from 'firebase/auth'
+import { auth } from '../../firebase.js'
+import { useNavigate } from 'react-router-dom'
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../config.js'
 import './drivertracking.css'
@@ -33,6 +36,7 @@ const DriverTracking = () => {
   const [location, setLocation] = useState(null)
   const [mapInstance, setMapInstance] = useState(null)
   const markerRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     axios
@@ -109,6 +113,12 @@ const DriverTracking = () => {
     }
   }, [location])
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('driverToken')
+    window.dispatchEvent(new Event('storage'))
+    navigate('/driverlogin')
+  }
+
   const handleShipmentSelect = (trackingNumber) => {
     setSelectedShipments((prev) => {
       const updatedList = prev.includes(trackingNumber)
@@ -157,7 +167,9 @@ const DriverTracking = () => {
       ) : (
         <p>Loading shipments or no shipments available.</p>
       )}
-
+      <button className="logout-btn" onClick={handleLogout}>
+        Logout
+      </button>
       {location && (
         <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
           <GoogleMap
