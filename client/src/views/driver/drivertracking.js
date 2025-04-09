@@ -80,7 +80,7 @@ const DriverTracking = () => {
           console.error('Geolocation error:', error)
           alert('Location tracking is disabled. Please enable GPS.')
         },
-        { enableHighAccuracy: true, maximumAge: 5000 },
+        { enableHighAccuracy: true, maximumAge: 2000 },
       )
 
       return () => navigator.geolocation.clearWatch(watchId)
