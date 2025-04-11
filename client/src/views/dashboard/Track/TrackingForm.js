@@ -4,7 +4,7 @@ import axios from '../../../api/axios.js'
 import io from 'socket.io-client'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+import { GoogleMap, LoadScript, Marker, DirectionsRenderer } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../../config.js'
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
@@ -30,21 +30,41 @@ const TrackingForm = () => {
   const [mapInstance, setMapInstance] = useState(null)
   const [socket, setSocket] = useState(null)
   const markerRef = useRef(null)
+  const [directions, setDirections] = useState(null)
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false)
+  const isSocketInitialized = useRef(false)
+
+  // Dynamically load the Google Maps API
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${VITE_APP_GOOGLE_MAP}&libraries=places&callback=initMap`
+    script.async = true
+    document.body.appendChild(script)
+
+    script.onload = () => {
+      setGoogleMapsLoaded(true)
+    }
+
+    // Cleanup
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [])
 
   useEffect(() => {
     const newSocket = io(VITE_SOCKET_URL, { autoConnect: false })
     setSocket(newSocket)
     return () => {
-      newSocket.disconnect() // Cleanup on unmount
+      newSocket.disconnect()
     }
   }, [])
 
-  // Connect WebSocket for Live Tracking
   useEffect(() => {
-    if (!trackingNumber || !socket) return
+    if (!trackingNumber || !socket || isSocketInitialized.current) return
 
     socket.connect()
     socket.emit('joinTracking', trackingNumber)
+    isSocketInitialized.current = true
 
     socket.on('shipmentLocationUpdate', (updatedShipment) => {
       console.log('Live location update received:', updatedShipment)
@@ -58,9 +78,56 @@ const TrackingForm = () => {
 
     return () => {
       socket.emit('leaveTracking', trackingNumber)
-      socket.off('locationUpdate')
+      socket.off('shipmentLocationUpdate')
+      isSocketInitialized.current = false
     }
   }, [trackingNumber, socket])
+
+  useEffect(() => {
+    const getDirections = async () => {
+      if (
+        shipmentData?.latitude &&
+        shipmentData?.longitude &&
+        shipmentData?.destination_latitude &&
+        shipmentData?.destination_longitude &&
+        window.google?.maps
+      ) {
+        const directionsService = new window.google.maps.DirectionsService()
+
+        const origin = {
+          lat: shipmentData.latitude,
+          lng: shipmentData.longitude,
+        }
+
+        const destination = {
+          lat: shipmentData.destination_latitude,
+          lng: shipmentData.destination_longitude,
+        }
+
+        directionsService.route(
+          {
+            origin,
+            destination,
+            travelMode: window.google.maps.TravelMode.DRIVING,
+          },
+          (result, status) => {
+            if (status === window.google.maps.DirectionsStatus.OK) {
+              setDirections(result)
+            } else {
+              console.error('Directions request failed due to', status)
+            }
+          },
+        )
+      }
+    }
+
+    getDirections()
+  }, [
+    shipmentData?.latitude,
+    shipmentData?.longitude,
+    shipmentData?.destination_latitude,
+    shipmentData?.destination_longitude,
+  ])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -78,10 +145,20 @@ const TrackingForm = () => {
         return
       }
 
+      if ((!data.destination_latitude || !data.destination_longitude) && data.deliveryAddress) {
+        const coords = await getCoordinates(data.deliveryAddress)
+        if (coords) {
+          data.destination_latitude = coords.latitude
+          data.destination_longitude = coords.longitude
+        }
+      }
+
       setShipmentData({
         ...data,
         latitude: Number(data.latitude),
         longitude: Number(data.longitude),
+        destination_latitude: Number(data.destination_latitude),
+        destination_longitude: Number(data.destination_longitude),
         updated_at: new Date(data.updated_at),
         expected_delivery: new Date(data.expected_delivery),
       })
@@ -94,9 +171,10 @@ const TrackingForm = () => {
   const animateMarker = (toLat, toLng) => {
     if (!markerRef.current) return
     const marker = markerRef.current
-    const start = marker.getPosition()
-    const end = new window.google.maps.LatLng(toLat, toLng)
+    const start = marker.getPosition?.()
+    if (!start) return
 
+    const end = new window.google.maps.LatLng(toLat, toLng)
     const steps = 60
     let i = 0
 
@@ -121,33 +199,60 @@ const TrackingForm = () => {
   }, [shipmentData?.latitude, shipmentData?.longitude])
 
   const renderMap = () => {
-    if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
+    if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude || !googleMapsLoaded) {
+      return null
+    }
 
-    const { latitude, longitude } = shipmentData
+    const { latitude, longitude, destination_latitude, destination_longitude } = shipmentData
 
     return (
-      <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
-        <GoogleMap
-          mapContainerStyle={{ height: '300px', width: '100%' }}
-          center={{ lat: latitude, lng: longitude }}
-          zoom={zoom}
-          onLoad={(map) => setMapInstance(map)}
-        >
+      <GoogleMap
+        mapContainerStyle={{ height: '300px', width: '100%' }}
+        center={{ lat: latitude, lng: longitude }}
+        zoom={zoom}
+        onLoad={(map) => setMapInstance(map)}
+      >
+        {/* Driver Marker */}
+        <Marker
+          position={{ lat: latitude, lng: longitude }}
+          onLoad={(marker) => (markerRef.current = marker)}
+          icon={
+            window.google?.maps
+              ? {
+                  url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
+                  scaledSize: new window.google.maps.Size(40, 40),
+                }
+              : undefined
+          }
+        />
+
+        {/* Destination Marker */}
+        {destination_latitude && destination_longitude && (
           <Marker
-            position={{ lat: latitude, lng: longitude }}
-            onLoad={(marker) => (markerRef.current = marker)}
-            icon={
-              window.google?.maps
-                ? {
-                    url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-                    scaledSize: new window.google.maps.Size(40, 40),
-                  }
-                : undefined
-            }
+            position={{ lat: destination_latitude, lng: destination_longitude }}
+            icon={{
+              url: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+              scaledSize: new window.google.maps.Size(40, 40),
+            }}
           />
-          {mapInstance && <MapCenterUpdater lat={latitude} lng={longitude} map={mapInstance} />}
-        </GoogleMap>
-      </LoadScript>
+        )}
+
+        {/* Driving Path */}
+        {directions && (
+          <DirectionsRenderer
+            directions={directions}
+            options={{
+              suppressMarkers: true,
+              polylineOptions: {
+                strokeColor: '#4285F4',
+                strokeWeight: 5,
+              },
+            }}
+          />
+        )}
+
+        {mapInstance && <MapCenterUpdater lat={latitude} lng={longitude} map={mapInstance} />}
+      </GoogleMap>
     )
   }
 

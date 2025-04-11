@@ -68,6 +68,8 @@ const trackDataSchema = new mongoose.Schema({
   deliveryAddress: String,
   latitude: Number,
   longitude: Number,
+  destination_latitude: Number,      
+  destination_longitude: Number, 
   events: [
     {
       status: { type: String, required: true },
@@ -80,19 +82,38 @@ const trackDataSchema = new mongoose.Schema({
 const TrackData = mongoose.model('Trackdata', trackDataSchema);
 
 // Helper Function to Get Geolocation
-const getCoordinates = async (location) => {
-  const apiKey = process.env.apiKey;
-  const apiUrl = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(location)}&key=${apiKey}`;
+const getCoordinates = async (address) => {
+  if (!address) {
+    console.error('Location is undefined or empty');
+    return null;
+  }
+
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY; // make sure you rename it or update your .env
+  if (!apiKey) {
+    console.error('Google Maps API key is missing from environment variables');
+    return null;
+  }
+
+  const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
 
   try {
     const response = await axios.get(apiUrl);
-    const { lat, lng } = response.data.results[0].geometry;
+    const results = response.data.results;
+
+    if (!results || results.length === 0) {
+      console.warn(`No results found for location: "${location}"`);
+      return null;
+    }
+
+    const { lat, lng } = results[0].geometry.location;
     return { latitude: lat, longitude: lng };
   } catch (error) {
-    console.error(' Error fetching geolocation:', error);
+    console.error('Error fetching geolocation from Google Maps:', error.message);
     return null;
   }
 };
+
+
 //Login
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -409,7 +430,7 @@ app.post('/track', async (req, res) => {
       if (!shipment.latitude || !shipment.longitude) {
         console.log('Fetching coordinates for:', shipment.current_location);
         const coordinates = await getCoordinates(shipment.current_location);
-        
+
         if (coordinates) {
           shipment.latitude = coordinates.latitude;
           shipment.longitude = coordinates.longitude;
@@ -419,6 +440,25 @@ app.post('/track', async (req, res) => {
         }
       }
 
+      if (!shipment.destination_latitude || !shipment.destination_longitude) {
+        console.log('Fetching coordinates for destination:', shipment.deliveryAddress); 
+
+        if (!shipment.deliveryAddress) {
+          return res.status(400).json({ status: 'error', message: 'Delivery address is missing.' });
+        }
+
+        const destinationCoords = await getCoordinates(shipment.deliveryAddress);
+
+        if (destinationCoords) {
+          shipment.destination_latitude = destinationCoords.latitude;
+          shipment.destination_longitude = destinationCoords.longitude;
+        } else {
+          return res.status(500).json({ status: 'error', message: 'Unable to fetch geolocation for delivery address.' });
+        }
+      }
+
+      await shipment.save();
+
       return res.json({
         status: shipment.status,
         trackingNumber: shipment.trackingNumber,
@@ -427,6 +467,8 @@ app.post('/track', async (req, res) => {
         updated_at: shipment.updated_at,
         latitude: Number(shipment.latitude),
         longitude: Number(shipment.longitude),
+        destination_latitude: Number(shipment.destination_latitude),
+        destination_longitude: Number(shipment.destination_longitude),
         events: shipment.events,
       });
     } else {
@@ -437,6 +479,7 @@ app.post('/track', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 });
+
 // Notifications 
 const hubs = [
   "Fortis Residences",

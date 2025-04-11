@@ -13,17 +13,11 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import {
-  cilBell,
-  cilMenu,
-  cilSun,
-  cilMoon,
-  cilContrast,
-} from '@coreui/icons'
+import { cilBell, cilMenu, cilSun, cilMoon, cilContrast } from '@coreui/icons'
 import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
 
-const socket = io(VITE_SOCKET_URL) 
+const socket = io(VITE_SOCKET_URL)
 
 const AppHeader = () => {
   const headerRef = useRef()
@@ -32,7 +26,7 @@ const AppHeader = () => {
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
-  const [dropdownVisible, setDropdownVisible] = useState(false) // ✅ State to toggle dropdown
+  const [dropdownVisible, setDropdownVisible] = useState(false)
 
   useEffect(() => {
     document.addEventListener('scroll', () => {
