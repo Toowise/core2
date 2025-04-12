@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import axios from '../../../api/axios'
 import { ring } from 'ldrs'
+import CIcon from '@coreui/icons-react'
+import { cilTrash } from '@coreui/icons'
 ring.register()
 import { useStateContext } from '../../../context/contextProvider'
 const ShipmentHistory = () => {
   const [shipmentHistory, setShipmentHistory] = useState([])
   const [loading, setLoading] = useState(true)
-  const [editMode, setEditMode] = useState(null)
   const { user } = useStateContext()
+  const [editMode, setEditMode] = useState(null)
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
@@ -80,15 +82,9 @@ const ShipmentHistory = () => {
                   <td>{entry.deliveryAddress}</td>
                   <td>
                     {user?.userRole === 'admin' ? (
-                      <>
-                        {editMode === entry.trackingNumber ? (
-                          <button onClick={() => handleDelete(entry.trackingNumber)}>Delete</button>
-                        ) : (
-                          <button onClick={() => handleEditClick(entry.trackingNumber)}>
-                            Edit
-                          </button>
-                        )}
-                      </>
+                      <button onClick={() => handleDelete(entry.trackingNumber)} className="delete">
+                        <CIcon icon={cilTrash} />
+                      </button>
                     ) : (
                       <span>No Actions Available</span>
                     )}

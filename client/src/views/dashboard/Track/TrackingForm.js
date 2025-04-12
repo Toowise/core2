@@ -34,7 +34,6 @@ const TrackingForm = () => {
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false)
   const isSocketInitialized = useRef(false)
 
-  // Dynamically load the Google Maps API
   useEffect(() => {
     const script = document.createElement('script')
     script.src = `https://maps.googleapis.com/maps/api/js?key=${VITE_APP_GOOGLE_MAP}&libraries=places&callback=initMap`
@@ -59,6 +58,7 @@ const TrackingForm = () => {
     }
   }, [])
 
+  // Connect WebSocket for Live Tracking
   useEffect(() => {
     if (!trackingNumber || !socket || isSocketInitialized.current) return
 
@@ -144,7 +144,6 @@ const TrackingForm = () => {
         alert(data.message)
         return
       }
-
       if ((!data.destination_latitude || !data.destination_longitude) && data.deliveryAddress) {
         const coords = await getCoordinates(data.deliveryAddress)
         if (coords) {
@@ -204,7 +203,6 @@ const TrackingForm = () => {
     }
 
     const { latitude, longitude, destination_latitude, destination_longitude } = shipmentData
-
     return (
       <GoogleMap
         mapContainerStyle={{ height: '300px', width: '100%' }}
@@ -225,7 +223,6 @@ const TrackingForm = () => {
               : undefined
           }
         />
-
         {/* Destination Marker */}
         {destination_latitude && destination_longitude && (
           <Marker
@@ -250,7 +247,6 @@ const TrackingForm = () => {
             }}
           />
         )}
-
         {mapInstance && <MapCenterUpdater lat={latitude} lng={longitude} map={mapInstance} />}
       </GoogleMap>
     )

@@ -15,32 +15,35 @@ import {
   CModalBody,
   CModalFooter,
 } from '@coreui/react'
-
+import PropTypes from 'prop-types'
 import { AppSidebarNav } from './AppSidebarNav'
 import logoImage from 'src/assets/brand/logo.png'
 
-// sidebar nav config
-import navigation from '../_nav'
+// nav configs
+import userNavigation from '../_nav'
+import adminNavigation from '../_nav_admin'
 
-const AppSidebar = () => {
+AppSidebar.propTypes = {
+  admin: PropTypes.bool.isRequired,
+}
+
+const AppSidebar = ({ admin = false }) => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate()
-  // Function to handle logout
+
   const handleLogout = () => {
     sessionStorage.removeItem('token')
     window.dispatchEvent(new Event('storage'))
     navigate('/login')
   }
 
-  // Function to show the confirmation modal
   const confirmLogout = () => {
     setShowModal(true)
   }
 
-  // Function to close the modal
   const closeModal = () => {
     setShowModal(false)
   }
@@ -68,7 +71,7 @@ const AppSidebar = () => {
       </CSidebarHeader>
 
       {/* Sidebar navigation */}
-      <AppSidebarNav items={navigation} />
+      <AppSidebarNav items={admin ? adminNavigation : userNavigation} />
 
       {/* Sidebar footer */}
       <CSidebarFooter className="border-top d-none d-lg-flex">

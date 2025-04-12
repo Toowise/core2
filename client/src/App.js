@@ -6,6 +6,7 @@ import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import Signup from './views/pages/login/signup/Signup'
 
+const AdminLayout = React.lazy(() => import('./layout/AdminLayout'))
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
@@ -24,14 +25,18 @@ const App = () => {
 
   // State for user authentication
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(!!sessionStorage.getItem('token'))
+  const [userRole, setUserRole] = useState(null)
 
   // Update authentication state if session storage changes
   useEffect(() => {
     const handleStorageChange = () => {
       setIsUserAuthenticated(!!sessionStorage.getItem('token'))
       setIsDriverAuthenticated(!!sessionStorage.getItem('driverToken'))
-    }
 
+      const user = JSON.parse(sessionStorage.getItem('user'))
+      setUserRole(user?.userRole || null)
+    }
+    handleStorageChange()
     window.addEventListener('storage', handleStorageChange)
     return () => {
       window.removeEventListener('storage', handleStorageChange)
@@ -75,10 +80,20 @@ const App = () => {
           <Route path="/404" element={<Page404 />} />
           <Route path="/500" element={<Page500 />} />
 
-          {/* Dashboard / Home */}
+          {/* Dashboard */}
           <Route
             path="/*"
-            element={isUserAuthenticated ? <DefaultLayout /> : <Navigate to="/login" />}
+            element={
+              isUserAuthenticated ? (
+                userRole === 'admin' ? (
+                  <AdminLayout />
+                ) : (
+                  <DefaultLayout />
+                )
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
           />
 
           {/* Catch-All 404 Page */}

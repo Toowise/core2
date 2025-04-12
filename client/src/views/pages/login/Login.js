@@ -40,20 +40,27 @@ const Login = () => {
       const response = await axios.post('/login', { username, password })
       const { token, user } = response.data
 
-      if (token) {
-        // Store token
+      if (token && user?.userRole) {
+        // Store token and user info
         sessionStorage.setItem('token', token)
-
-        // Optional: store minimal user info
         sessionStorage.setItem('user', JSON.stringify(user))
 
         // Notify app
         window.dispatchEvent(new Event('storage'))
 
-        // Navigate to dashboard
-        navigate('/')
+        // Set global user (if you're using context)
+        setUser(user)
+
+        // Redirect based on role
+        if (user.userRole === 'admin') {
+          navigate('/admindashboard')
+        } else if (user.userRole === 'user') {
+          navigate('/')
+        } else {
+          setErrorMessage('Unknown role. Please contact support.')
+        }
       } else {
-        setErrorMessage('Invalid credentials')
+        setErrorMessage('Invalid credentials or user role not found.')
       }
     } catch (err) {
       console.error(err)

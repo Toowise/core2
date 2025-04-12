@@ -88,7 +88,7 @@ const getCoordinates = async (address) => {
     return null;
   }
 
-  const apiKey = process.env.GOOGLE_MAPS_API_KEY; // make sure you rename it or update your .env
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY; 
   if (!apiKey) {
     console.error('Google Maps API key is missing from environment variables');
     return null;

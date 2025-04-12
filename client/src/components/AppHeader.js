@@ -13,13 +13,18 @@ import {
   useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
+import PropTypes from 'prop-types'
 import { cilBell, cilMenu, cilSun, cilMoon, cilContrast } from '@coreui/icons'
 import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
 
+AppHeader.propTypes = {
+  admin: PropTypes.bool.isRequired,
+}
+
 const socket = io(VITE_SOCKET_URL)
 
-const AppHeader = () => {
+const AppHeader = ({ admin = false }) => {
   const headerRef = useRef()
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
@@ -58,7 +63,7 @@ const AppHeader = () => {
 
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible)
-    setUnreadCount(0) // ✅ Reset unread count when opened
+    setUnreadCount(0) //
   }
 
   return (
@@ -69,39 +74,29 @@ const AppHeader = () => {
         </CHeaderToggler>
 
         <CHeaderNav className="ms-auto">
-          {/* 🚀 Notification Dropdown */}
-          <CDropdown variant="nav-item" visible={dropdownVisible} onClick={toggleDropdown}>
-            <CDropdownToggle caret={false}>
-              <CIcon icon={cilBell} size="lg" />
-              {unreadCount > 0 && (
-                <span
-                  style={{
-                    backgroundColor: 'red',
-                    color: 'white',
-                    borderRadius: '50%',
-                    padding: '3px 7px',
-                    fontSize: '12px',
-                    position: 'absolute',
-                    top: '5px',
-                    right: '5px',
-                  }}
-                >
-                  {unreadCount}
-                </span>
-              )}
-            </CDropdownToggle>
-            <CDropdownMenu>
-              {notifications.length === 0 ? (
-                <CDropdownItem disabled>No new notifications</CDropdownItem>
-              ) : (
-                notifications.map((notif, index) => (
-                  <CDropdownItem key={index}>
-                    📦 {notif.status} - {notif.timestamp}
-                  </CDropdownItem>
-                ))
-              )}
-            </CDropdownMenu>
-          </CDropdown>
+          {!admin && (
+            <CDropdown variant="nav-item" visible={dropdownVisible} onClick={toggleDropdown}>
+              <CDropdownToggle caret={false}>
+                <CIcon icon={cilBell} size="lg" />
+                {unreadCount > 0 && (
+                  <span className="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger">
+                    {unreadCount}
+                  </span>
+                )}
+              </CDropdownToggle>
+              <CDropdownMenu>
+                {notifications.length === 0 ? (
+                  <CDropdownItem disabled>No new notifications</CDropdownItem>
+                ) : (
+                  notifications.map((notif, index) => (
+                    <CDropdownItem key={index}>
+                      📦 {notif.status} - {notif.timestamp}
+                    </CDropdownItem>
+                  ))
+                )}
+              </CDropdownMenu>
+            </CDropdown>
+          )}
         </CHeaderNav>
         <CHeaderNav>
           <li className="nav-item py-1">

@@ -1,17 +1,22 @@
 import React, { Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { CContainer, CSpinner } from '@coreui/react'
-
+import PropTypes from 'prop-types'
 // routes config
 import routes from '../routes'
 
-const AppContent = () => {
+AppContent.propTypes = {
+  admin: PropTypes.bool.isRequired,
+}
+
+const AppContent = ({ admin = false }) => {
+  const filteredRoutes = admin ? routes : routes.filter((r) => !r.adminOnly)
   return (
     <CContainer className="px-4" lg>
       <Suspense fallback={<CSpinner color="primary" />}>
         <Routes>
-          {routes.map((route, idx) => {
-            return (
+          {filteredRoutes.map(
+            (route, idx) =>
               route.element && (
                 <Route
                   key={idx}
@@ -20,9 +25,8 @@ const AppContent = () => {
                   name={route.name}
                   element={<route.element />}
                 />
-              )
-            )
-          })}
+              ),
+          )}
           <Route path="/" element={<Navigate to="dashboard" replace />} />
         </Routes>
       </Suspense>
