@@ -66,6 +66,7 @@ const trackDataSchema = new mongoose.Schema({
   current_location: String,
   expected_delivery: Date,
   deliveryAddress: String,
+  driverUsername: { type: String },
   latitude: Number,
   longitude: Number,
   destination_latitude: Number,      
@@ -257,15 +258,23 @@ app.post('/driverlogin', async (req, res) => {
 //Driver get shipments
 app.get('/driver/shipments', async (req, res) => {
   try {
-    // Fetch all active tracking numbers and their delivery addresses
-    const activeShipments = await TrackData.find({}, { trackingNumber: 1, deliveryAddress: 1});
-    console.log("Active Shipments:", activeShipments);
-    res.json(activeShipments);
+    const activeShipments = await TrackData.find({}, {
+      trackingNumber: 1,
+      deliveryAddress: 1,
+      status: 1,
+      latitude: 1,
+      longitude: 1,
+      driverUsername: 1,
+      updated_at: 1,
+    })
+
+    res.json(activeShipments)
   } catch (error) {
-    console.error("Error fetching active shipments:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error fetching active shipments:", error)
+    res.status(500).json({ success: false, message: "Server error" })
   }
-});
+})
+
 //Driver Tracking
 io.on("connection", (socket) => {
   console.log(" Driver connected:", socket.id);

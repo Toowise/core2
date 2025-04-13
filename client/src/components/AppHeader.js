@@ -18,10 +18,6 @@ import { cilBell, cilMenu, cilSun, cilMoon, cilContrast } from '@coreui/icons'
 import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
 
-AppHeader.propTypes = {
-  admin: PropTypes.bool.isRequired,
-}
-
 const socket = io(VITE_SOCKET_URL)
 
 const AppHeader = ({ admin = false }) => {
@@ -150,6 +146,9 @@ const AppHeader = ({ admin = false }) => {
       </CContainer>
     </CHeader>
   )
+}
+AppHeader.propTypes = {
+  admin: PropTypes.bool.isRequired,
 }
 
 export default AppHeader

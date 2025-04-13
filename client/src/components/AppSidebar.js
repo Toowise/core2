@@ -23,10 +23,6 @@ import logoImage from 'src/assets/brand/logo.png'
 import userNavigation from '../_nav'
 import adminNavigation from '../_nav_admin'
 
-AppSidebar.propTypes = {
-  admin: PropTypes.bool.isRequired,
-}
-
 const AppSidebar = ({ admin = false }) => {
   const dispatch = useDispatch()
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
@@ -101,5 +97,7 @@ const AppSidebar = ({ admin = false }) => {
     </CSidebar>
   )
 }
-
+AppSidebar.propTypes = {
+  admin: PropTypes.bool.isRequired,
+}
 export default React.memo(AppSidebar)

@@ -5,10 +5,6 @@ import PropTypes from 'prop-types'
 // routes config
 import routes from '../routes'
 
-AppContent.propTypes = {
-  admin: PropTypes.bool.isRequired,
-}
-
 const AppContent = ({ admin = false }) => {
   const filteredRoutes = admin ? routes : routes.filter((r) => !r.adminOnly)
   return (
@@ -33,5 +29,7 @@ const AppContent = ({ admin = false }) => {
     </CContainer>
   )
 }
-
+AppContent.propTypes = {
+  admin: PropTypes.bool.isRequired,
+}
 export default React.memo(AppContent)
