@@ -1,86 +1,50 @@
-import React, { useEffect, useState } from 'react'
-import {
-  CCard,
-  CCardBody,
-  CCol,
-  CRow,
-  CTable,
-  CTableBody,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CTableDataCell,
-  CSpinner,
-} from '@coreui/react'
+import React, { useState } from 'react'
+import { CButton, CButtonGroup, CCard, CCardBody, CCol, CRow } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilCloudDownload } from '@coreui/icons'
+import WidgetsDropdown from '../../widgets/WidgetsDropdown'
+import MainChart from '../../dashboard/MainChart'
 
 const AdminDashboard = () => {
-  const [shipments, setShipments] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchShipments = async () => {
-      try {
-        const res = await fetch('http://localhost:5052/driver/shipments')
-        const data = await res.json()
-        setShipments(data)
-      } catch (error) {
-        console.error('Failed to fetch shipments:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchShipments()
-  }, [])
+  const [activeFilter, setActiveFilter] = useState('Month')
 
   return (
-    <CRow>
-      <CCol>
-        <CCard className="mb-4 shadow-sm">
-          <CCardBody>
-            <h4 className="mb-3">Active Shipments </h4>
-            {loading ? (
-              <CSpinner color="primary" />
-            ) : (
-              <CTable striped responsive bordered hover>
-                <CTableHead>
-                  <CTableRow>
-                    <CTableHeaderCell>Tracking Number</CTableHeaderCell>
-                    <CTableHeaderCell>Status</CTableHeaderCell>
-                    <CTableHeaderCell>Driver</CTableHeaderCell>
-                    <CTableHeaderCell>Delivery Address</CTableHeaderCell>
-                    <CTableHeaderCell>Live Location</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody>
-                  {shipments.map((s) => (
-                    <CTableRow key={s.trackingNumber}>
-                      <CTableDataCell>{s.trackingNumber}</CTableDataCell>
-                      <CTableDataCell>{s.status || 'Unknown'}</CTableDataCell>
-                      <CTableDataCell>{s.driverUsername || 'Unassigned'}</CTableDataCell>
-                      <CTableDataCell>{s.deliveryAddress}</CTableDataCell>
-                      <CTableDataCell>
-                        {s.latitude && s.longitude ? (
-                          <a
-                            href={`https://www.google.com/maps?q=${s.latitude},${s.longitude}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View on Map
-                          </a>
-                        ) : (
-                          'Not Available'
-                        )}
-                      </CTableDataCell>
-                    </CTableRow>
-                  ))}
-                </CTableBody>
-              </CTable>
-            )}
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
+    <>
+      {/* Widgets Section */}
+      <WidgetsDropdown className="mb-4" />
+
+      {/* Shipment Statistics Card */}
+      <CCard className="mb-4 shadow-sm">
+        <CCardBody>
+          <CRow className="align-items-center">
+            <CCol sm={6}>
+              <h4 id="traffic" className="card-title mb-1">
+                Current Shipment
+              </h4>
+              <div className="small text-muted">Updated just now</div>
+            </CCol>
+            <CCol sm={6} className="d-flex justify-content-end">
+              <CButton color="primary" className="me-3">
+                <CIcon icon={cilCloudDownload} className="me-2" />
+                Export
+              </CButton>
+              <CButtonGroup>
+                {['Day', 'Month', 'Year'].map((value) => (
+                  <CButton
+                    key={value}
+                    color={activeFilter === value ? 'primary' : 'outline-secondary'}
+                    onClick={() => setActiveFilter(value)}
+                  >
+                    {value}
+                  </CButton>
+                ))}
+              </CButtonGroup>
+            </CCol>
+          </CRow>
+          <MainChart filter={activeFilter} />
+        </CCardBody>
+      </CCard>
+    </>
   )
 }
 

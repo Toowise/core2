@@ -9,6 +9,7 @@ const Signup = React.lazy(() => import('./views/pages/login/signup/Signup'))
 const DriverLogin = React.lazy(() => import('./views/driver/driverlogin'))
 const DriverTracking = React.lazy(() => import('./views/driver/drivertracking'))
 const AdminDashboard = React.lazy(() => import('./views/pages/admin/AdminDashboard'))
+const DriverManagement = React.lazy(() => import('./views/driver/drivermanagement'))
 
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))
@@ -71,6 +72,12 @@ const routes = [
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
   { path: '/admindashboard', name: 'AdminDashboard', element: AdminDashboard, adminOnly: true },
+  {
+    path: '/drivermanagement',
+    name: 'DriverManagement',
+    element: DriverManagement,
+    adminOnly: true,
+  },
 ]
 
 export default routes

@@ -31,24 +31,7 @@ const TrackingForm = () => {
   const [socket, setSocket] = useState(null)
   const markerRef = useRef(null)
   const [directions, setDirections] = useState(null)
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false)
   const isSocketInitialized = useRef(false)
-
-  useEffect(() => {
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${VITE_APP_GOOGLE_MAP}&libraries=places&callback=initMap`
-    script.async = true
-    document.body.appendChild(script)
-
-    script.onload = () => {
-      setGoogleMapsLoaded(true)
-    }
-
-    // Cleanup
-    return () => {
-      document.body.removeChild(script)
-    }
-  }, [])
 
   useEffect(() => {
     const newSocket = io(VITE_SOCKET_URL, { autoConnect: false })
@@ -58,7 +41,6 @@ const TrackingForm = () => {
     }
   }, [])
 
-  // Connect WebSocket for Live Tracking
   useEffect(() => {
     if (!trackingNumber || !socket || isSocketInitialized.current) return
 
@@ -144,6 +126,7 @@ const TrackingForm = () => {
         alert(data.message)
         return
       }
+
       if ((!data.destination_latitude || !data.destination_longitude) && data.deliveryAddress) {
         const coords = await getCoordinates(data.deliveryAddress)
         if (coords) {
@@ -198,11 +181,10 @@ const TrackingForm = () => {
   }, [shipmentData?.latitude, shipmentData?.longitude])
 
   const renderMap = () => {
-    if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude || !googleMapsLoaded) {
-      return null
-    }
+    if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
 
     const { latitude, longitude, destination_latitude, destination_longitude } = shipmentData
+
     return (
       <GoogleMap
         mapContainerStyle={{ height: '300px', width: '100%' }}
@@ -210,7 +192,6 @@ const TrackingForm = () => {
         zoom={zoom}
         onLoad={(map) => setMapInstance(map)}
       >
-        {/* Driver Marker */}
         <Marker
           position={{ lat: latitude, lng: longitude }}
           onLoad={(marker) => (markerRef.current = marker)}
@@ -223,7 +204,6 @@ const TrackingForm = () => {
               : undefined
           }
         />
-        {/* Destination Marker */}
         {destination_latitude && destination_longitude && (
           <Marker
             position={{ lat: destination_latitude, lng: destination_longitude }}
@@ -233,8 +213,6 @@ const TrackingForm = () => {
             }}
           />
         )}
-
-        {/* Driving Path */}
         {directions && (
           <DirectionsRenderer
             directions={directions}
@@ -269,7 +247,11 @@ const TrackingForm = () => {
       </form>
 
       {shipmentData && <ShipmentInfo data={shipmentData} />}
-      {renderMap()}
+
+      {/* Wrapped the map in LoadScript */}
+      <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP} libraries={['places']}>
+        {renderMap()}
+      </LoadScript>
     </div>
   )
 }

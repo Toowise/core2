@@ -34,7 +34,7 @@ const _nav_admin = [
   {
     component: CNavItem,
     name: 'Driver Management',
-    to: '/',
+    to: '/drivermanagement',
     icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
     badge: {
       color: 'info',

@@ -19,7 +19,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo (server,{
   cors: {
-    origin: '*',
+    origin: 'https://core2.axleshift.com',
     methods: ["GET", "POST"],
   },
 });
@@ -30,7 +30,11 @@ if (!admin.apps.length) {
     credential: admin.credential.cert(serviceAccount),
   });
 }
-app.use(cors({ origin: "*" }));
+app.use(cors({
+  origin: ['https://core2.axleshift.com'],
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 app.use(express.json());
 
 // MongoDB Connection
@@ -39,10 +43,10 @@ mongoose.connect(mongoURI)
   .then(() => console.log(' MongoDB connected '))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Socket.IO Connection
+// Socket.IO Connection and Driver Tracking
 io.on("connection", (socket) => {
   console.log("A client connected:", socket.id);
-  
+
   socket.on("joinTracking", (trackingNumber) => {
     console.log(`Client joined tracking: ${trackingNumber}`);
     socket.join(trackingNumber);
@@ -53,10 +57,46 @@ io.on("connection", (socket) => {
     socket.leave(trackingNumber);
   });
 
+  socket.on("driverLocationUpdate", async (data) => {
+    console.log("Received driver location update:", data);
+    const trackingNumbers = Array.isArray(data.trackingNumber)
+      ? data.trackingNumber
+      : [data.trackingNumber];
+    
+    if (!trackingNumbers.length) return;
+
+    try {
+      const updatedAt = new Date();
+      await TrackData.updateMany(
+        { trackingNumber: { $in: trackingNumbers } },
+        {
+          $set: {
+            latitude: data.latitude,
+            longitude: data.longitude,
+            updated_at: updatedAt,
+            driverUsername: data.driverUsername,
+          },
+        }
+      );
+
+      trackingNumbers.forEach((tn) => {
+        io.to(tn).emit("shipmentLocationUpdate", {
+          trackingNumber: tn,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          updated_at: updatedAt,
+        });
+      });
+    } catch (error) {
+      console.error("Error updating shipment location:", error);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
 });
+
 
 // Mongoose Schema for Tracking Data
 const trackDataSchema = new mongoose.Schema({
@@ -275,70 +315,6 @@ app.get('/driver/shipments', async (req, res) => {
   }
 })
 
-//Driver Tracking
-io.on("connection", (socket) => {
-  console.log(" Driver connected:", socket.id);
-
-  //  Join a tracking room when a driver selects a shipment
-  socket.on("joinTracking", (trackingNumber) => {
-    console.log(` Client joined tracking room: ${trackingNumber}`);
-    socket.join(trackingNumber);
-  });
-
-  //  Leave the tracking room when a driver deselects a shipment
-  socket.on("leaveTracking", (trackingNumber) => {
-    console.log(` Client left tracking room: ${trackingNumber}`);
-    socket.leave(trackingNumber);
-  });
-
-  //  Handle driver location updates
-  socket.on("driverLocationUpdate", async (data) => {
-    console.log("Received driver location update:", data);
-  
-    // Normalize trackingNumber(s) to array
-    const trackingNumbers = Array.isArray(data.trackingNumber)
-      ? data.trackingNumber
-      : [data.trackingNumber];
-  
-    if (!trackingNumbers.length) {
-      console.error("Invalid or missing trackingNumbers:", data);
-      return;
-    }
-  
-    try {
-      // Update all matching TrackData entries
-      const updatedAt = new Date();
-      await TrackData.updateMany(
-        { trackingNumber: { $in: trackingNumbers } },
-        {
-          $set: {
-            latitude: data.latitude,
-            longitude: data.longitude,
-            updated_at: updatedAt,
-          },
-        }
-      );
-  
-      // Broadcast updates to rooms
-      trackingNumbers.forEach((trackingNumber) => {
-        console.log(`Broadcasting location update for ${trackingNumber}`);
-        io.to(trackingNumber).emit("shipmentLocationUpdate", {
-          trackingNumber,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          updated_at: updatedAt,
-        });
-      });
-    } catch (error) {
-      console.error("Error updating shipment location:", error);
-    }
-  });
-  
-  socket.on("disconnect", () => {
-    console.log(" Driver disconnected:", socket.id);
-  });
-});
-
 //  Email
 app.post("/verify-email", async (req, res) => {
   try {
@@ -545,13 +521,6 @@ app.get('/history', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 });
-// Serve frontend build files
-app.use(express.static(path.join(__dirname, "../client/build"))); 
-// Catch-all route to serve React's `index.html`
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
-
 // Start Server
 server.listen(PORT, () => {
   console.log(` Server running on PORT: ${PORT}`);
