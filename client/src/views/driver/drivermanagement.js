@@ -20,7 +20,7 @@ const DriverManagement = () => {
   useEffect(() => {
     const fetchShipments = async () => {
       try {
-        const res = await fetch('http://localhost:5052/driver/shipments')
+        const res = await fetch('https:backend-core.axleshift.com/driver/shipments')
         const data = await res.json()
         setShipments(data)
       } catch (error) {
