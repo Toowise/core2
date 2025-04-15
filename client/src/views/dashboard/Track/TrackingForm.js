@@ -4,7 +4,7 @@ import axios from '../../../api/axios.js'
 import io from 'socket.io-client'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
-import { GoogleMap, LoadScript, Marker, DirectionsRenderer } from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../../config.js'
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
@@ -33,6 +33,12 @@ const TrackingForm = () => {
   const [directions, setDirections] = useState(null)
   const isSocketInitialized = useRef(false)
 
+  // ✅ useJsApiLoader replaces <LoadScript>
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: VITE_APP_GOOGLE_MAP,
+    libraries: ['places'],
+  })
+
   useEffect(() => {
     const newSocket = io(VITE_SOCKET_URL, { autoConnect: false })
     setSocket(newSocket)
@@ -49,7 +55,6 @@ const TrackingForm = () => {
     isSocketInitialized.current = true
 
     socket.on('shipmentLocationUpdate', (updatedShipment) => {
-      console.log('Live location update received:', updatedShipment)
       setShipmentData((prevData) => ({
         ...prevData,
         latitude: updatedShipment.latitude,
@@ -72,15 +77,14 @@ const TrackingForm = () => {
         shipmentData?.longitude &&
         shipmentData?.destination_latitude &&
         shipmentData?.destination_longitude &&
+        isLoaded &&
         window.google?.maps
       ) {
         const directionsService = new window.google.maps.DirectionsService()
-
         const origin = {
           lat: shipmentData.latitude,
           lng: shipmentData.longitude,
         }
-
         const destination = {
           lat: shipmentData.destination_latitude,
           lng: shipmentData.destination_longitude,
@@ -109,6 +113,7 @@ const TrackingForm = () => {
     shipmentData?.longitude,
     shipmentData?.destination_latitude,
     shipmentData?.destination_longitude,
+    isLoaded,
   ])
 
   const handleSubmit = async (e) => {
@@ -126,7 +131,6 @@ const TrackingForm = () => {
         alert(data.message)
         return
       }
-
       if ((!data.destination_latitude || !data.destination_longitude) && data.deliveryAddress) {
         const coords = await getCoordinates(data.deliveryAddress)
         if (coords) {
@@ -151,7 +155,7 @@ const TrackingForm = () => {
   }
 
   const animateMarker = (toLat, toLng) => {
-    if (!markerRef.current) return
+    if (!markerRef.current || !window.google) return
     const marker = markerRef.current
     const start = marker.getPosition?.()
     if (!start) return
@@ -175,10 +179,10 @@ const TrackingForm = () => {
   }
 
   useEffect(() => {
-    if (shipmentData && markerRef.current) {
+    if (isLoaded && shipmentData && markerRef.current) {
       animateMarker(shipmentData.latitude, shipmentData.longitude)
     }
-  }, [shipmentData?.latitude, shipmentData?.longitude])
+  }, [shipmentData?.latitude, shipmentData?.longitude, isLoaded])
 
   const renderMap = () => {
     if (!shipmentData || !shipmentData.latitude || !shipmentData.longitude) return null
@@ -196,7 +200,7 @@ const TrackingForm = () => {
           position={{ lat: latitude, lng: longitude }}
           onLoad={(marker) => (markerRef.current = marker)}
           icon={
-            window.google?.maps
+            isLoaded && window.google
               ? {
                   url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
                   scaledSize: new window.google.maps.Size(40, 40),
@@ -207,10 +211,14 @@ const TrackingForm = () => {
         {destination_latitude && destination_longitude && (
           <Marker
             position={{ lat: destination_latitude, lng: destination_longitude }}
-            icon={{
-              url: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-              scaledSize: new window.google.maps.Size(40, 40),
-            }}
+            icon={
+              isLoaded && window.google
+                ? {
+                    url: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                    scaledSize: new window.google.maps.Size(40, 40),
+                  }
+                : undefined
+            }
           />
         )}
         {directions && (
@@ -248,10 +256,7 @@ const TrackingForm = () => {
 
       {shipmentData && <ShipmentInfo data={shipmentData} />}
 
-      {/* Wrapped the map in LoadScript */}
-      <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP} libraries={['places']}>
-        {renderMap()}
-      </LoadScript>
+      {isLoaded ? renderMap() : <div>Loading map...</div>}
     </div>
   )
 }
