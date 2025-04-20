@@ -125,12 +125,31 @@ const DriverTracking = () => {
 
       if (!prev.includes(trackingNumber)) {
         socket.emit('joinTracking', trackingNumber)
+        onShipmentSelect(trackingNumber)
       } else {
         socket.emit('leaveTracking', trackingNumber)
       }
 
       return updatedList
     })
+  }
+  const assignShipmentToDriver = async (trackingNumber, driverUsername) => {
+    try {
+      await fetch('http://localhost:5052/driver/select-shipment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ trackingNumber, driverUsername }),
+      })
+    } catch (error) {
+      console.error('Failed to assign shipment:', error)
+    }
+  }
+  const onShipmentSelect = (trackingNumber) => {
+    const driverUsername = sessionStorage.getItem('driverUsername')
+    console.log('Assigning shipment to driver:', driverUsername)
+    assignShipmentToDriver(trackingNumber, driverUsername)
   }
 
   return (

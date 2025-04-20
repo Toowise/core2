@@ -48,6 +48,7 @@ const DriverLogin = () => {
 
       // Store token and navigate
       sessionStorage.setItem('driverToken', data.token)
+      sessionStorage.setItem('driverUsername', data.driver.username)
       window.dispatchEvent(new Event('storage'))
       navigate('/drivertracking')
     } catch (error) {

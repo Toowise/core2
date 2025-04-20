@@ -19,7 +19,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo (server,{
   cors: {
-    origin: 'https://core2.axleshift.com',
+    origin: 'http://localhost:3000',
     methods: ["GET", "POST"],
   },
 });
@@ -31,7 +31,7 @@ if (!admin.apps.length) {
   });
 }
 app.use(cors({
-  origin: ['https://core2.axleshift.com'],
+  origin: ['http://localhost:3000'],
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -314,6 +314,28 @@ app.get('/driver/shipments', async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" })
   }
 })
+// Driver selects shipments to track
+app.post('/driver/select-shipment', async (req, res) => {
+  const { trackingNumber, driverUsername } = req.body;
+  console.log('Received for assign:', { trackingNumber, driverUsername })
+
+  try {
+    const shipment = await TrackData.findOne({ trackingNumber });
+
+    if (!shipment) {
+      return res.status(404).json({ message: "Shipment not found" });
+    }
+
+    shipment.driverUsername = driverUsername; 
+    await shipment.save();
+
+    res.json({ message: "Shipment successfully assigned to the driver", shipment });
+  } catch (error) {
+    console.error("Error assigning shipment:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 //  Email
 app.post("/verify-email", async (req, res) => {
