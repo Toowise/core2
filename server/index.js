@@ -8,6 +8,7 @@ const socketIo = require('socket.io');
 const path = require("path");
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer')
 const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
@@ -154,46 +155,71 @@ const getCoordinates = async (address) => {
   }
 };
 
+const twoFACodes = {}
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+})
 
 //Login
 app.post('/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { username, password } = req.body
 
   try {
-    
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username })
+    if (!user) return res.status(404).json({ message: 'User not found' })
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+    const isPasswordValid = await bcryptjs.compare(password, user.password)
+    if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' })
 
-    
-    const isPasswordValid = await bcryptjs.compare(password, user.password);
+    // Generate a 2FA code
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    twoFACodes[username] = { code, expires: Date.now() + 5 * 60 * 1000 }
 
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    // Send the code via email
+    await transporter.sendMail({
+      from: '"Login Verification" <noreply@example.com>',
+      to: user.email,
+      subject: 'Your Login 2FA Code',
+      text: `Your 2FA code is: ${code}. It expires in 5 minutes.`,
+    })
 
-   
-    const token = jwt.sign(
-      { username: user.username, userRole: user.userRole },
-      process.env.JWT_SECRET,  
-      { expiresIn: '1h' }  
-    );
-
-    console.log(user);
-    res.json({ 
-      token, 
-      user: { 
-        username: user.username, 
-        userRole: user.userRole  
-      } 
-    });
+    res.json({ requires2FA: true, username })
   } catch (error) {
-    console.error('Error during login:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error during login:', error)
+    res.status(500).json({ message: 'Server error' })
   }
-});
+})
+// Verify 
+app.post('/verify-2fa', async (req, res) => {
+  const { username, code } = req.body
+  const entry = twoFACodes[username]
+
+  if (!entry || entry.code !== code || Date.now() > entry.expires) {
+    return res.status(401).json({ message: 'Invalid or expired 2FA code' })
+  }
+
+  delete twoFACodes[username]
+
+  const user = await User.findOne({ username })
+  const token = jwt.sign(
+    { username: user.username, userRole: user.userRole },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  )
+
+  res.json({
+    token,
+    user: {
+      username: user.username,
+      userRole: user.userRole,
+    },
+  })
+})
 
 //Signup 
 app.post("/signup", async (req, res) => {

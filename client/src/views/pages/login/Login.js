@@ -15,7 +15,6 @@ import {
   CInputGroupText,
   CFormInput,
   CButton,
-  CButtonGroup,
   CTooltip,
   CSpinner,
 } from '@coreui/react'
@@ -25,6 +24,8 @@ import { useStateContext } from '../../../context/contextProvider'
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
+  const [step, setStep] = useState(1)
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -38,33 +39,35 @@ const Login = () => {
 
     try {
       const response = await axios.post('/login', { username, password })
-      const { token, user } = response.data
 
-      if (token && user?.userRole) {
-        // Store token and user info
-        sessionStorage.setItem('token', token)
-        sessionStorage.setItem('user', JSON.stringify(user))
-
-        // Notify app
-        window.dispatchEvent(new Event('storage'))
-
-        // Set global user (if you're using context)
-        setUser(user)
-
-        // Redirect based on role
-        if (user.userRole === 'admin') {
-          navigate('/admindashboard')
-        } else if (user.userRole === 'user') {
-          navigate('/')
-        } else {
-          setErrorMessage('Unknown role. Please contact support.')
-        }
-      } else {
-        setErrorMessage('Invalid credentials or user role not found.')
-      }
+      // Proceed to 2FA step
+      setStep(2)
     } catch (err) {
       console.error(err)
-      setErrorMessage('Login failed. Please try again.')
+      setErrorMessage(err.response?.data?.message || 'Login failed.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handle2FAVerification = async (e) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setErrorMessage(null)
+
+    try {
+      const response = await axios.post('/verify-2fa', { username, code })
+      const { token, user } = response.data
+
+      sessionStorage.setItem('token', token)
+      sessionStorage.setItem('user', JSON.stringify(user))
+      window.dispatchEvent(new Event('storage'))
+      setUser(user)
+
+      navigate(user.userRole === 'admin' ? '/admindashboard' : '/')
+    } catch (err) {
+      console.error(err)
+      setErrorMessage(err.response?.data?.message || '2FA verification failed.')
     } finally {
       setIsLoading(false)
     }
@@ -88,81 +91,78 @@ const Login = () => {
                     {errorMessage}
                   </CAlert>
                 )}
-                <CForm onSubmit={handleLogin}>
-                  <h1>Login</h1>
+
+                <CForm onSubmit={step === 1 ? handleLogin : handle2FAVerification}>
+                  <h1>{step === 1 ? 'Login' : '2FA Verification'}</h1>
                   <p className="text-body-secondary">Sign in to your account</p>
-                  <CInputGroup className="mb-3">
-                    <CInputGroupText>
-                      <FontAwesomeIcon icon={faUser} />
-                    </CInputGroupText>
-                    <CFormInput
-                      type="text"
-                      placeholder="Username"
-                      autoComplete="username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      required
-                    />
-                  </CInputGroup>
-                  <CInputGroup className="mb-3">
-                    <CInputGroupText>
-                      <FontAwesomeIcon icon={faLock} />
-                    </CInputGroupText>
-                    <CFormInput
-                      type={isPasswordVisible ? 'text' : 'password'}
-                      placeholder="Password"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                    <CInputGroupText>
-                      <CTooltip
-                        content={isPasswordVisible ? 'Hide password' : 'Show password'}
-                        placement="top"
-                      >
-                        <span onClick={() => setIsPasswordVisible(!isPasswordVisible)}>
-                          <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye} />
-                        </span>
-                      </CTooltip>
-                    </CInputGroupText>
-                  </CInputGroup>
-                  <p>
-                    <small>
-                      By continuing, you agree to our
-                      <a href="/policy" className="text-primary">
-                        {' '}
-                        Privacy Policy{' '}
-                      </a>
-                      and
-                      <a href="/terms" className="text-primary">
-                        {' '}
-                        Terms of Service
-                      </a>
-                      .
-                    </small>
-                  </p>
+
+                  {step === 1 ? (
+                    <>
+                      <CInputGroup className="mb-3">
+                        <CInputGroupText>
+                          <FontAwesomeIcon icon={faUser} />
+                        </CInputGroupText>
+                        <CFormInput
+                          type="text"
+                          placeholder="Username"
+                          autoComplete="username"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          required
+                        />
+                      </CInputGroup>
+
+                      <CInputGroup className="mb-3">
+                        <CInputGroupText>
+                          <FontAwesomeIcon icon={faLock} />
+                        </CInputGroupText>
+                        <CFormInput
+                          type={isPasswordVisible ? 'text' : 'password'}
+                          placeholder="Password"
+                          autoComplete="current-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                        <CInputGroupText>
+                          <CTooltip
+                            content={isPasswordVisible ? 'Hide password' : 'Show password'}
+                            placement="top"
+                          >
+                            <span onClick={() => setIsPasswordVisible(!isPasswordVisible)}>
+                              <FontAwesomeIcon icon={isPasswordVisible ? faEyeSlash : faEye} />
+                            </span>
+                          </CTooltip>
+                        </CInputGroupText>
+                      </CInputGroup>
+                    </>
+                  ) : (
+                    <CInputGroup className="mb-3">
+                      <CInputGroupText>🔐</CInputGroupText>
+                      <CFormInput
+                        type="text"
+                        placeholder="Enter 2FA Code"
+                        value={code}
+                        onChange={(e) => setCode(e.target.value)}
+                        required
+                      />
+                    </CInputGroup>
+                  )}
+
                   <div className="d-grid mb-3">
-                    <CButtonGroup>
-                      <CButton type="submit" color="primary" className="rounded">
-                        Login
-                      </CButton>
-                      <CButton
-                        color="primary"
-                        className="rounded"
-                        onClick={() => navigate('/signup')}
-                      >
-                        Signup
-                      </CButton>
-                    </CButtonGroup>
+                    <CButton type="submit" color="primary" className="rounded">
+                      {step === 1 ? 'Login' : 'Verify Code'}
+                    </CButton>
                   </div>
-                  <CButton
-                    color="link"
-                    className="px-0 text-primary"
-                    onClick={() => console.log('Forgot password clicked')}
-                  >
-                    Forgot password?
-                  </CButton>
+
+                  {step === 1 && (
+                    <p>
+                      {"Don't have an account?"}{' '}
+                      <a href="/signup" className="signup-link">
+                        Signup
+                      </a>
+                    </p>
+                  )}
                 </CForm>
               </CCardBody>
             </CCard>
