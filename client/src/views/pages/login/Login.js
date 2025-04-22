@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import axios from 'src/api/axios.js'
+import axios from '../../../api/axios'
 import { useNavigate } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUser, faLock, faEye, faEyeSlash, faX } from '@fortawesome/free-solid-svg-icons'
@@ -138,7 +138,9 @@ const Login = () => {
                     </>
                   ) : (
                     <CInputGroup className="mb-3">
-                      <CInputGroupText>🔐</CInputGroupText>
+                      <CInputGroupText>
+                        <FontAwesomeIcon icon={faLock} />
+                      </CInputGroupText>
                       <CFormInput
                         type="text"
                         placeholder="Enter 2FA Code"

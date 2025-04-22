@@ -30,6 +30,6 @@ const AppContent = ({ admin = false }) => {
   )
 }
 AppContent.propTypes = {
-  admin: PropTypes.bool.isRequired,
+  admin: PropTypes.bool,
 }
 export default React.memo(AppContent)

@@ -9,11 +9,13 @@ const path = require("path");
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
+const { updateShipmentStatus } = require('./utils/statusUpdate');
 const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
 const User = require('./models/User'); 
 const Driver = require('./models/Driver');
+const TrackData = require('./models/TrackData');
 const PORT = process.env.PORT || 5052;
 // Initialize Express & Server
 const app = express();
@@ -48,6 +50,7 @@ mongoose.connect(mongoURI)
 io.on("connection", (socket) => {
   console.log("A client connected:", socket.id);
 
+  // Client joins a tracking room
   socket.on("joinTracking", (trackingNumber) => {
     console.log(`Client joined tracking: ${trackingNumber}`);
     socket.join(trackingNumber);
@@ -58,16 +61,17 @@ io.on("connection", (socket) => {
     socket.leave(trackingNumber);
   });
 
+  // Driver updates location
   socket.on("driverLocationUpdate", async (data) => {
-    console.log("Received driver location update:", data);
     const trackingNumbers = Array.isArray(data.trackingNumber)
       ? data.trackingNumber
       : [data.trackingNumber];
-    
+
     if (!trackingNumbers.length) return;
 
+    const updatedAt = new Date();
+
     try {
-      const updatedAt = new Date();
       await TrackData.updateMany(
         { trackingNumber: { $in: trackingNumbers } },
         {
@@ -93,35 +97,54 @@ io.on("connection", (socket) => {
     }
   });
 
+  // General location update that also checks status
+  socket.on("locationUpdate", async ({ trackingNumber, latitude, longitude }) => {
+    if (!trackingNumber || !latitude || !longitude) return;
+
+    try {
+      const shipment = await TrackData.findOne({ trackingNumber });
+      if (!shipment) return;
+      const locationName = await getAddressFromCoordinates(latitude, longitude) || 
+      `${latitude}, ${longitude}`;
+      shipment.latitude = latitude;
+      shipment.longitude = longitude;
+
+      const newStatus = updateShipmentStatus(shipment, { lat: latitude, lon: longitude });
+
+      if (newStatus !== shipment.status) {
+        shipment.status = newStatus;
+        shipment.events.push({
+          status: newStatus,
+          date: new Date().toISOString(),
+          location: { latitude, longitude },
+          coordinates: { latitude, longitude },
+        });
+
+        io.to(trackingNumber).emit("statusChanged", {
+          trackingNumber,
+          newStatus,
+        });
+      }
+
+      await shipment.save();
+
+      io.to(trackingNumber).emit("shipmentLocationUpdate", {
+        trackingNumber,
+        latitude,
+        longitude,
+        status: shipment.status,
+      });
+
+    } catch (err) {
+      console.error("Error processing locationUpdate:", err);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id);
   });
 });
 
-
-// Mongoose Schema for Tracking Data
-const trackDataSchema = new mongoose.Schema({
-  trackingNumber: String,
-  status: String,
-  updated_at: Date,
-  current_location: String,
-  expected_delivery: Date,
-  deliveryAddress: String,
-  driverUsername: { type: String },
-  latitude: Number,
-  longitude: Number,
-  destination_latitude: Number,      
-  destination_longitude: Number, 
-  events: [
-    {
-      status: { type: String, required: true },
-      date: { type: String, required: true },
-      time: { type: String, required: true },
-      location: { type: String, required: true },
-    },
-  ],
-});
-const TrackData = mongoose.model('Trackdata', trackDataSchema);
 
 // Helper Function to Get Geolocation
 const getCoordinates = async (address) => {
@@ -154,7 +177,40 @@ const getCoordinates = async (address) => {
     return null;
   }
 };
+// Reverse Geocode
+const getAddressFromCoordinates = async (latitude, longitude) => {
+  if (!latitude || !longitude) {
+    console.error('Coordinates are missing');
+    return null;
+  }
 
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    console.error('Google Maps API key is missing');
+    return null;
+  }
+
+  const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}`;
+
+  try {
+    const response = await axios.get(apiUrl);
+    const results = response.data.results;
+
+    if (!results || results.length === 0) {
+      console.warn(`No address found for coordinates: ${latitude},${longitude}`);
+      return null;
+    }
+
+    // Return formatted address (e.g., "Manila, Philippines")
+    return results[0].formatted_address;
+    
+  } catch (error) {
+    console.error('Error reverse geocoding:', error.message);
+    return null;
+  }
+};
+
+// Nodemailer
 const twoFACodes = {}
 
 const transporter = nodemailer.createTransport({
@@ -194,6 +250,7 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Server error' })
   }
 })
+
 // Verify 
 app.post('/verify-2fa', async (req, res) => {
   const { username, code } = req.body

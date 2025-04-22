@@ -98,6 +98,6 @@ const AppSidebar = ({ admin = false }) => {
   )
 }
 AppSidebar.propTypes = {
-  admin: PropTypes.bool.isRequired,
+  admin: PropTypes.bool,
 }
 export default React.memo(AppSidebar)

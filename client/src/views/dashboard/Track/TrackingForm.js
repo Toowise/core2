@@ -7,6 +7,7 @@ import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
 import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../../config.js'
 
+const GOOGLE_MAPS_LIBRARIES = ['places']
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
     if (map && lat && lng) {
@@ -32,11 +33,10 @@ const TrackingForm = () => {
   const markerRef = useRef(null)
   const [directions, setDirections] = useState(null)
   const isSocketInitialized = useRef(false)
-
   // ✅ useJsApiLoader replaces <LoadScript>
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: VITE_APP_GOOGLE_MAP,
-    libraries: ['places'],
+    libraries: GOOGLE_MAPS_LIBRARIES,
   })
 
   useEffect(() => {

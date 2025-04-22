@@ -135,12 +135,9 @@ const DriverTracking = () => {
   }
   const assignShipmentToDriver = async (trackingNumber, driverUsername) => {
     try {
-      await fetch('http://localhost:5052/driver/select-shipment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ trackingNumber, driverUsername }),
+      await axios.post('/driver/select-shipment', {
+        trackingNumber,
+        driverUsername,
       })
     } catch (error) {
       console.error('Failed to assign shipment:', error)
