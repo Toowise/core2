@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Shipment = require('../models/TrackData'); // your existing schema!
+const Shipment = require('../models/TrackData'); 
 
 // Get all shipments
 router.get('/', async (req, res) => {

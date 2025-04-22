@@ -6,11 +6,11 @@ import './ShipmentInfo.scss'
 import packageimg from './../../../assets/brand/package.jpg'
 
 const ShipmentInfo = ({ data }) => {
-  const [shipmentData, setShipmentData] = useState(data) // ✅ No conflict now
+  const [shipmentData, setShipmentData] = useState(data)
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
-    const socket = io('https://core2.axleshift.com/')
+    const socket = io('https://backend-core2.axleshift.com/')
 
     socket.emit('joinRoom', data.trackingNumber)
 
@@ -35,8 +35,7 @@ const ShipmentInfo = ({ data }) => {
     })
 
     return () => socket.disconnect()
-  }, [data.trackingNumber]) // ✅ Using the original prop safely
-
+  }, [data.trackingNumber]) 
   return (
     <div className="shipment-container">
       <div className="header">
