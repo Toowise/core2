@@ -10,7 +10,7 @@ const ShipmentInfo = ({ data }) => {
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
-    const socket = io('http://localhost:3000')
+    const socket = io('https://core2.axleshift.com/')
 
     socket.emit('joinRoom', data.trackingNumber)
 

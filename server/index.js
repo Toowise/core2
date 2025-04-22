@@ -13,6 +13,7 @@ const { updateShipmentStatus } = require('./utils/statusUpdate');
 const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
+const shipmentsRoutes = require('./routes/shipments');
 const User = require('./models/User'); 
 const Driver = require('./models/Driver');
 const TrackData = require('./models/TrackData');
@@ -22,7 +23,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo (server,{
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'https://core2.axleshift.com/',
     methods: ["GET", "POST"],
   },
 });
@@ -34,12 +35,12 @@ if (!admin.apps.length) {
   });
 }
 app.use(cors({
-  origin: ['http://localhost:3000'],
+  origin: ['https://core2.axleshift.com/'],
   methods: ['GET', 'POST'],
   credentials: true
 }));
 app.use(express.json());
-
+app.use('/api/shipments', shipmentsRoutes);
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
 mongoose.connect(mongoURI)
