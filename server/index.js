@@ -40,6 +40,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "../client/build")));
 app.use('/api/shipments', shipmentsRoutes);
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
@@ -626,6 +627,9 @@ app.get('/history', async (req, res) => {
     console.error('Error fetching shipment data:', err);
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
+});
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 // Start Server
 server.listen(PORT, () => {
