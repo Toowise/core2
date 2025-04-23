@@ -35,7 +35,7 @@ const ShipmentInfo = ({ data }) => {
     })
 
     return () => socket.disconnect()
-  }, [data.trackingNumber]) 
+  }, [data.trackingNumber])
   return (
     <div className="shipment-container">
       <div className="header">
