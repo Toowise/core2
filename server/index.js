@@ -10,6 +10,7 @@ const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
 const { updateShipmentStatus } = require('./utils/statusUpdate');
+const { createProxyMiddleware } = require("http-proxy-middleware");
 const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
@@ -40,7 +41,11 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../client/build")));
+app.use("/assets", createProxyMiddleware({
+  target: "https://core2.axleshift.com",
+  changeOrigin: true
+}));
+
 app.use('/api/shipments', shipmentsRoutes);
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
@@ -627,10 +632,7 @@ app.get('/history', async (req, res) => {
     console.error('Error fetching shipment data:', err);
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
-});
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
+}); 
 // Start Server
 server.listen(PORT, () => {
   console.log(` Server running on PORT: ${PORT}`);
