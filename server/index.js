@@ -51,10 +51,16 @@ mongoose.connect(mongoURI)
   .then(() => {
     dbReady = true; 
     console.log('MongoDB connected');
+
+    // Start server only after DB connection is established
+    server.listen(PORT, () => {
+      console.log(`Server running on PORT: ${PORT}`);
+    });
   })
   .catch(err => {
     console.error('MongoDB connection error:', err);
     dbReady = false; 
+    // Handle case where DB connection fails and don't start the server
   });
 
 // Socket.IO Connection and Driver Tracking
@@ -641,7 +647,4 @@ app.get('/api/history', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 }); 
-// Start Server
-server.listen(PORT, () => {
-  console.log(` Server running on PORT: ${PORT}`);
-});
+
