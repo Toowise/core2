@@ -115,7 +115,7 @@ const Signup = () => {
           password: formData.password,
         }
 
-        const response = await axios.post('/api/signup', userData)
+        const response = await axios.post('/signup', userData)
         console.log('Signup successful:', response.data)
 
         await axios.post('/api/verify-email', { email: formData.email })

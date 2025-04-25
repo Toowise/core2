@@ -13,7 +13,7 @@ const ShipmentHistory = () => {
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('/api/history')
+        const response = await axios.get('/history')
         const data = response.data
         if (data.status === 'success') {
           setShipmentHistory(data.data)

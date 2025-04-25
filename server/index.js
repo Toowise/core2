@@ -239,7 +239,7 @@ const transporter = nodemailer.createTransport({
 })
 
 //Login
-app.post('/api/login', async (req, res) => {
+app.post('/login', async (req, res) => {
   const { username, password } = req.body
 
   try {
@@ -269,7 +269,7 @@ app.post('/api/login', async (req, res) => {
 })
 
 // Verify 
-app.post('/api/verify-2fa', async (req, res) => {
+app.post('/verify-2fa', async (req, res) => {
   const { username, code } = req.body
   const entry = twoFACodes[username]
 
@@ -296,7 +296,7 @@ app.post('/api/verify-2fa', async (req, res) => {
 })
 
 //Signup 
-app.post("/api/signup", async (req, res) => {
+app.post("/signup", async (req, res) => {
   try {
     console.log("Incoming signup request:", req.body); 
     const { fullname, username, email, password, address } = req.body;
@@ -396,7 +396,7 @@ app.post('/api/driverlogin', async (req, res) => {
 });
 
 //Driver get shipments
-app.get('/api/driver/shipments', async (req, res) => {
+app.get('/driver/shipments', async (req, res) => {
   try {
     const activeShipments = await TrackData.find({}, {
       trackingNumber: 1,
@@ -415,7 +415,7 @@ app.get('/api/driver/shipments', async (req, res) => {
   }
 })
 // Driver selects shipments to track
-app.post('/api/driver/select-shipment', async (req, res) => {
+app.post('/driver/select-shipment', async (req, res) => {
   const { trackingNumber, driverUsername } = req.body;
   console.log('Received for assign:', { trackingNumber, driverUsername })
 
@@ -438,7 +438,7 @@ app.post('/api/driver/select-shipment', async (req, res) => {
 
 
 //  Email
-app.post("/api/verify-email", async (req, res) => {
+app.post("/verify-email", async (req, res) => {
   try {
     const { email } = req.body;
     // Get user from Firebase
@@ -511,7 +511,7 @@ app.post('/resend-verification', resendEmailLimiter, async (req, res) => {
 });
 
 // Delete 
-app.delete('/api/track/:trackingNumber', async (req, res) => {
+app.delete('/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
   try {
     const deletedShipment = await TrackData.findOneAndDelete({ trackingNumber });
@@ -527,7 +527,7 @@ app.delete('/api/track/:trackingNumber', async (req, res) => {
 });
 
 // Track Shipment
-app.post('/api/track', async (req, res) => {
+app.post('/track', async (req, res) => {
   const { trackingNumber } = req.body;
 
   try {
@@ -634,7 +634,7 @@ function getStatusMessage(status, location) {
 }
 
 
-app.get('/api/history', async (req, res) => {
+app.get('/history', async (req, res) => {
   try {
     const shippedData = await TrackData.find();
     if (shippedData.length > 0) {

@@ -38,7 +38,7 @@ const Login = () => {
     setErrorMessage(null)
 
     try {
-      const response = await axios.post('/api/login', { username, password })
+      const response = await axios.post('/login', { username, password })
 
       // Proceed to 2FA step
       setStep(2)
@@ -56,7 +56,7 @@ const Login = () => {
     setErrorMessage(null)
 
     try {
-      const response = await axios.post('/api/verify-2fa', { username, code })
+      const response = await axios.post('/verify-2fa', { username, code })
       const { token, user } = response.data
 
       sessionStorage.setItem('token', token)
