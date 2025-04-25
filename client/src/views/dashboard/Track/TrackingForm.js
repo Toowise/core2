@@ -123,7 +123,7 @@ const TrackingForm = () => {
     }
 
     try {
-      const response = await axios.post('/api/track', { trackingNumber })
+      const response = await axios.post('/track', { trackingNumber })
       const data = response.data
 
       if (data.status === 'error') {
