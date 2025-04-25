@@ -18,6 +18,7 @@ const User = require('./models/User');
 const Driver = require('./models/Driver');
 const TrackData = require('./models/TrackData');
 const PORT = process.env.PORT || 5052;
+let dbReady = false;
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
@@ -47,8 +48,14 @@ app.use('/api/shipments', shipmentsRoutes);
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
 mongoose.connect(mongoURI)
-  .then(() => console.log(' MongoDB connected '))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => {
+    dbReady = true; 
+    console.log('MongoDB connected');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    dbReady = false; 
+  });
 
 // Socket.IO Connection and Driver Tracking
 io.on("connection", (socket) => {
@@ -473,7 +480,7 @@ const resendEmailLimiter = rateLimit({
 });
 
 // Resend Verification Email Route
-app.post('/api/resend-verification', resendEmailLimiter, async (req, res) => {
+app.post('/resend-verification', resendEmailLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     const userRecord = await admin.auth().getUserByEmail(email);
@@ -634,18 +641,6 @@ app.get('/api/history', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 }); 
-app.use('/api/*', (_req, res) => {
-  res.status(404).json({ message: 'API route not found' });
-});
-app.use(express.static(path.join(__dirname, "../client/build"))); 
-// Catch-all route to serve React's `index.html`
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build/index.html"));
-});
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something broke!' });
-});
 // Start Server
 server.listen(PORT, () => {
   console.log(` Server running on PORT: ${PORT}`);
