@@ -21,7 +21,7 @@ const DriverManagement = () => {
   useEffect(() => {
     const fetchShipments = async () => {
       try {
-        const res = await fetch('/driver/shipments')
+        const res = await fetch('https://backend-core2.axleshift.com/driver/shipments')
         const data = await res.json()
         setShipments(data)
       } catch (error) {
@@ -33,7 +33,9 @@ const DriverManagement = () => {
 
     fetchShipments()
 
-    const socket = io('https://backend-core2.axleshift.com/')
+    const socket = io('https://backend-core2.axleshift.com',{
+      transports: ['websocket', 'polling'],
+    })
 
     // Listen for shipment location updates
     socket.on('shipmentLocationUpdate', (data) => {

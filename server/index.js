@@ -5,12 +5,10 @@ const cors = require('cors');
 const axios = require('axios');
 const http = require('http');
 const socketIo = require('socket.io');
-const path = require("path");
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
 const { updateShipmentStatus } = require('./utils/statusUpdate');
-const { createProxyMiddleware } = require("http-proxy-middleware");
 const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
@@ -23,9 +21,11 @@ const PORT = process.env.PORT || 5052;
 const app = express();
 const server = http.createServer(app);
 const io = socketIo (server,{
+  transports: ['websocket', 'polling'],
   cors: {
-    origin: 'https://core2.axleshift.com/',
+    origin: ['https://core2.axleshift.com','http://localhost:3000'],
     methods: ["GET", "POST"],
+    credentials: true
   },
 });
 
@@ -36,15 +36,11 @@ if (!admin.apps.length) {
   });
 }
 app.use(cors({
-  origin: ['https://core2.axleshift.com/'],
+  origin: ['https://core2.axleshift.com','http://localhost:3000'],
   methods: ['GET', 'POST'],
   credentials: true
 }));
 app.use(express.json());
-app.use("/assets", createProxyMiddleware({
-  target: "https://core2.axleshift.com",
-  changeOrigin: true
-}));
 
 app.use('/api/shipments', shipmentsRoutes);
 // MongoDB Connection
