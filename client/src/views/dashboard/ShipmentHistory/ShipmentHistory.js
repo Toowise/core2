@@ -13,7 +13,7 @@ const ShipmentHistory = () => {
   useEffect(() => {
     const fetchShipmentHistory = async () => {
       try {
-        const response = await axios.get('/history')
+        const response = await axios.get('/api/history')
         const data = response.data
         if (data.status === 'success') {
           setShipmentHistory(data.data)
@@ -33,7 +33,7 @@ const ShipmentHistory = () => {
   const handleDelete = async (trackingNumber) => {
     if (window.confirm('Are you sure you want to delete this shipment?')) {
       try {
-        const response = await axios.delete(`/track/${trackingNumber}`)
+        const response = await axios.delete(`/api/track/${trackingNumber}`)
 
         if (response.data.status === 'success') {
           setShipmentHistory((prevHistory) =>

@@ -18,7 +18,10 @@ import { cilBell, cilMenu, cilSun, cilMoon, cilContrast } from '@coreui/icons'
 import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
 
-const socket = io(VITE_SOCKET_URL)
+const socket = io(VITE_SOCKET_URL, {
+  transports: ['websocket', 'polling'],
+  withCredentials: true,
+})
 
 const AppHeader = ({ admin = false }) => {
   const headerRef = useRef()
@@ -37,21 +40,16 @@ const AppHeader = ({ admin = false }) => {
 
     // Listen for real-time shipment updates
     socket.on('shipmentUpdate', (update) => {
-      // If the shipment is at a hub or sorting center, display a special notification
-      if (update.isAtHub) {
+      if (update.critical) {
         setNotifications((prev) => [
           {
             ...update,
-            message: `Shipment arrived at ${update.location}!`,
+            message: update.message,
           },
           ...prev,
         ])
-      } else {
-        // Regular shipment update
-        setNotifications((prev) => [update, ...prev])
+        setUnreadCount((prev) => prev + 1)
       }
-
-      setUnreadCount((prev) => prev + 1)
     })
 
     return () => socket.off('shipmentUpdate')

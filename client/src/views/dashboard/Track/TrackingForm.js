@@ -33,7 +33,6 @@ const TrackingForm = () => {
   const markerRef = useRef(null)
   const [directions, setDirections] = useState(null)
   const isSocketInitialized = useRef(false)
-  // ✅ useJsApiLoader replaces <LoadScript>
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: VITE_APP_GOOGLE_MAP,
     libraries: GOOGLE_MAPS_LIBRARIES,
@@ -124,7 +123,7 @@ const TrackingForm = () => {
     }
 
     try {
-      const response = await axios.post('/track', { trackingNumber })
+      const response = await axios.post('/api/track', { trackingNumber })
       const data = response.data
 
       if (data.status === 'error') {

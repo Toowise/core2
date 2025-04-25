@@ -115,10 +115,10 @@ const Signup = () => {
           password: formData.password,
         }
 
-        const response = await axios.post('/signup', userData)
+        const response = await axios.post('/api/signup', userData)
         console.log('Signup successful:', response.data)
 
-        await axios.post('/verify-email', { email: formData.email })
+        await axios.post('/api/verify-email', { email: formData.email })
         setSuccessMessage('User registered successfully! Redirecting to login...')
         setTimeout(() => navigate('/login'), 3000)
       } else {

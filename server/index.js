@@ -8,6 +8,7 @@ const socketIo = require('socket.io');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
+const path = require('path');
 const { updateShipmentStatus } = require('./utils/statusUpdate');
 const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
@@ -119,7 +120,7 @@ io.on("connection", (socket) => {
         shipment.events.push({
           status: newStatus,
           date: new Date().toISOString(),
-          location: { latitude, longitude },
+          location: locationName,
           coordinates: { latitude, longitude },
         });
 
@@ -225,7 +226,7 @@ const transporter = nodemailer.createTransport({
 })
 
 //Login
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body
 
   try {
@@ -255,7 +256,7 @@ app.post('/login', async (req, res) => {
 })
 
 // Verify 
-app.post('/verify-2fa', async (req, res) => {
+app.post('/api/verify-2fa', async (req, res) => {
   const { username, code } = req.body
   const entry = twoFACodes[username]
 
@@ -282,7 +283,7 @@ app.post('/verify-2fa', async (req, res) => {
 })
 
 //Signup 
-app.post("/signup", async (req, res) => {
+app.post("/api/signup", async (req, res) => {
   try {
     console.log("Incoming signup request:", req.body); 
     const { fullname, username, email, password, address } = req.body;
@@ -355,7 +356,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 //Driver Login
-app.post('/driverlogin', async (req, res) => {
+app.post('/api/driverlogin', async (req, res) => {
   const { username, password } = req.body;
   console.log(`Incoming request: ${req.method} ${req.url}`);
 
@@ -382,7 +383,7 @@ app.post('/driverlogin', async (req, res) => {
 });
 
 //Driver get shipments
-app.get('/driver/shipments', async (req, res) => {
+app.get('/api/driver/shipments', async (req, res) => {
   try {
     const activeShipments = await TrackData.find({}, {
       trackingNumber: 1,
@@ -401,7 +402,7 @@ app.get('/driver/shipments', async (req, res) => {
   }
 })
 // Driver selects shipments to track
-app.post('/driver/select-shipment', async (req, res) => {
+app.post('/api/driver/select-shipment', async (req, res) => {
   const { trackingNumber, driverUsername } = req.body;
   console.log('Received for assign:', { trackingNumber, driverUsername })
 
@@ -424,7 +425,7 @@ app.post('/driver/select-shipment', async (req, res) => {
 
 
 //  Email
-app.post("/verify-email", async (req, res) => {
+app.post("/api/verify-email", async (req, res) => {
   try {
     const { email } = req.body;
     // Get user from Firebase
@@ -472,7 +473,7 @@ const resendEmailLimiter = rateLimit({
 });
 
 // Resend Verification Email Route
-app.post('/resend-verification', resendEmailLimiter, async (req, res) => {
+app.post('/api/resend-verification', resendEmailLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     const userRecord = await admin.auth().getUserByEmail(email);
@@ -497,7 +498,7 @@ app.post('/resend-verification', resendEmailLimiter, async (req, res) => {
 });
 
 // Delete 
-app.delete('/track/:trackingNumber', async (req, res) => {
+app.delete('/api/track/:trackingNumber', async (req, res) => {
   const { trackingNumber } = req.params;
   try {
     const deletedShipment = await TrackData.findOneAndDelete({ trackingNumber });
@@ -513,7 +514,7 @@ app.delete('/track/:trackingNumber', async (req, res) => {
 });
 
 // Track Shipment
-app.post('/track', async (req, res) => {
+app.post('/api/track', async (req, res) => {
   const { trackingNumber } = req.body;
 
   try {
@@ -574,17 +575,8 @@ app.post('/track', async (req, res) => {
 });
 
 // Notifications 
-const hubs = [
-  "Fortis Residences",
-  "Warehouse1",
-  "Sorting Center A",
-  "Sorting Center B",
-  "Hub2",
-  "Warehouse2"
-];
-const lastKnownLocations = new Map();
-
-let dbReady = false;
+const criticalStatuses = ["Out for delivery", "Delivered", "Exception"];
+const lastStatusMap = new Map();
 
 setInterval(async () => {
   if (!dbReady) return;
@@ -593,30 +585,43 @@ setInterval(async () => {
     const recentShipments = await TrackData.find().sort({ updatedAt: -1 }).limit(10);
 
     recentShipments.forEach((shipment) => {
-      const isAtHub = hubs.some(hub => hub.toLowerCase() === shipment.location.toLowerCase());
-      const lastLocation = lastKnownLocations.get(shipment.trackingNumber);
+      const lastStatus = lastStatusMap.get(shipment.trackingNumber);
 
-      // Only notify if newly arrived at a hub (i.e., location changed)
-      if (isAtHub && lastLocation !== shipment.location) {
-        lastKnownLocations.set(shipment.trackingNumber, shipment.location); // update memory
+      if (criticalStatuses.includes(shipment.status) && shipment.status !== lastStatus) {
+        lastStatusMap.set(shipment.trackingNumber, shipment.status); 
 
         io.emit("shipmentUpdate", {
           trackingNumber: shipment.trackingNumber,
           status: shipment.status,
           location: shipment.location,
           timestamp: new Date(shipment.updatedAt).toLocaleString(),
-          isAtHub: true,
+          critical: true,
+          message: getStatusMessage(shipment.status, shipment.location),
         });
 
-        console.log(` Emitted hub update for ${shipment.trackingNumber} at ${shipment.location}`);
+        console.log(` Emitted critical update: ${shipment.trackingNumber} - ${shipment.status}`);
       }
     });
   } catch (err) {
-    console.error(" Error during hub check:", err);
+    console.error(" Error during status check:", err);
   }
 }, 10000);
 
-app.get('/history', async (req, res) => {
+function getStatusMessage(status, location) {
+  switch (status) {
+    case "Out for delivery":
+      return `Shipment is out for delivery from ${location}`;
+    case "Delivered":
+      return `Shipment has been delivered successfully.`;
+    case "Exception":
+      return `Shipment has encountered an issue. Please contact support.`;
+    default:
+      return `Shipment update: ${status}`;
+  }
+}
+
+
+app.get('/api/history', async (req, res) => {
   try {
     const shippedData = await TrackData.find();
     if (shippedData.length > 0) {
@@ -629,6 +634,18 @@ app.get('/history', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 }); 
+app.use('/api/*', (_req, res) => {
+  res.status(404).json({ message: 'API route not found' });
+});
+app.use(express.static(path.join(__dirname, "../client/build"))); 
+// Catch-all route to serve React's `index.html`
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something broke!' });
+});
 // Start Server
 server.listen(PORT, () => {
   console.log(` Server running on PORT: ${PORT}`);
