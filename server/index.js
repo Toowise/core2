@@ -28,7 +28,6 @@ const io = socketIo (server,{
     origin: ['https://core2.axleshift.com','http://localhost:3000'],
     methods: ["GET", "POST"],
     credentials: true,
-    allowEIO3: true,
   },
 });
 
