@@ -645,4 +645,9 @@ app.get('/history', async (req, res) => {
     res.status(500).json({ status: 'error', message: 'An error occurred while fetching shipment data.' });
   }
 }); 
+app.use(express.static(path.join(__dirname, "../client/build"))); 
+// Catch-all route to serve React's `index.html`
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
+});
 
