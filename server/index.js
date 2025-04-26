@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
 const http = require('http');
-const socketIo = require('socket.io');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
@@ -22,7 +21,7 @@ let dbReady = false;
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
-const io = socketIo (server,{
+const io = require('socket.io')(server,{
   transports: ['websocket', 'polling'],
   cors: {
     origin: ['https://core2.axleshift.com','http://localhost:3000'],
