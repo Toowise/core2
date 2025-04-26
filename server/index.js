@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
-const http = require('http');
+const https = require('https');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
@@ -22,7 +22,7 @@ const clients = new Map();
 let dbReady = false;
 // Initialize Express & Server
 const app = express();
-const server = http.createServer(app);
+const server = https.createServer(app);
 const wss = new WebSocket.Server({ server });
 // Firebase Admin Initialization
 if (!admin.apps.length) {
@@ -54,7 +54,7 @@ mongoose.connect(mongoURI)
     dbReady = false; 
   });
 
-// Socket.IO Connection and Driver Tracking
+//Websocket Connection
 wss.on('connection', (socket) => {
   console.log('New WebSocket client connected.');
 
