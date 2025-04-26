@@ -1,16 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react'
-import PropTypes from 'prop-types'
-import axios from '../../api/axios.js'
-import io from 'socket.io-client'
+import { GoogleMap, useJsApiLoader, Marker, LoadScript} from '@react-google-maps/api'
 import { useNavigate } from 'react-router-dom'
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
-import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../config.js'
+import PropTypes from 'prop-types'
+import axios from '../../api/axios'
+import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../config'
 import './drivertracking.css'
-
-const socket = io(VITE_SOCKET_URL, {
-  transports: ['websocket', 'polling'],
-  withCredentials: true,
-})
 
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
@@ -34,33 +28,56 @@ const DriverTracking = () => {
   const [location, setLocation] = useState(null)
   const [mapInstance, setMapInstance] = useState(null)
   const markerRef = useRef(null)
+  const socketRef = useRef(null)
   const navigate = useNavigate()
 
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: VITE_APP_GOOGLE_MAP,
+    libraries: ['places']
+  })
+
+  // Load available shipments
   useEffect(() => {
     axios
       .get('/driver/shipments')
       .then((response) => {
         setShipments(Array.isArray(response.data) ? response.data : [])
       })
-      .catch((error) => console.error('Error fetching shipments:', error))
+      .catch((error) => {
+        console.error('Error fetching shipments:', error)
+      })
   }, [])
 
-  // Get initial location
+  // Initialize WebSocket
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        console.log('Initial GPS Location:', latitude, longitude)
-        setLocation({ latitude, longitude })
-      },
-      (error) => {
-        console.error('Error getting initial location', error)
-      },
-      { enableHighAccuracy: true },
-    )
+    socketRef.current = new WebSocket(VITE_SOCKET_URL)
+
+    socketRef.current.onopen = () => {
+      console.log('WebSocket connected (DriverTracking)')
+    }
+
+    socketRef.current.onmessage = (event) => {
+      const message = JSON.parse(event.data)
+
+      if (message.type === 'shipmentLocationUpdate') {
+        console.log('Shipment location updated:', message.data)
+      }
+    }
+
+    socketRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error)
+    }
+
+    socketRef.current.onclose = () => {
+      console.log('WebSocket disconnected')
+    }
+
+    return () => {
+      socketRef.current?.close()
+    }
   }, [])
 
-  // Watch location updates
+  // Track driver's real-time location
   useEffect(() => {
     if (selectedShipments.length > 0) {
       const watchId = navigator.geolocation.watchPosition(
@@ -69,25 +86,45 @@ const DriverTracking = () => {
           setLocation({ latitude, longitude })
 
           selectedShipments.forEach((trackingNumber) => {
-            socket.emit('driverLocationUpdate', {
-              trackingNumber,
-              latitude,
-              longitude,
-            })
+            if (socketRef.current?.readyState === WebSocket.OPEN) {
+              socketRef.current.send(
+                JSON.stringify({
+                  type: 'driverLocationUpdate',
+                  trackingNumber,
+                  latitude,
+                  longitude,
+                })
+              )
+            }
           })
         },
         (error) => {
           console.error('Geolocation error:', error)
           alert('Location tracking is disabled. Please enable GPS.')
         },
-        { enableHighAccuracy: true, maximumAge: 2000 },
+        { enableHighAccuracy: true, maximumAge: 2000 }
       )
 
       return () => navigator.geolocation.clearWatch(watchId)
     }
   }, [selectedShipments])
 
-  // Animate marker on location change
+  // Get initial GPS location
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        console.log('Initial GPS Location:', latitude, longitude)
+        setLocation({ latitude, longitude })
+      },
+      (error) => {
+        console.error('Error getting initial location:', error)
+      },
+      { enableHighAccuracy: true }
+    )
+  }, [])
+
+  // Animate marker smoothly
   useEffect(() => {
     if (location && markerRef.current) {
       const marker = markerRef.current
@@ -124,15 +161,30 @@ const DriverTracking = () => {
         : [...prev, trackingNumber]
 
       if (!prev.includes(trackingNumber)) {
-        socket.emit('joinTracking', trackingNumber)
+        if (socketRef.current?.readyState === WebSocket.OPEN) {
+          socketRef.current.send(
+            JSON.stringify({
+              type: 'joinTracking',
+              trackingNumber,
+            })
+          )
+        }
         onShipmentSelect(trackingNumber)
       } else {
-        socket.emit('leaveTracking', trackingNumber)
+        if (socketRef.current?.readyState === WebSocket.OPEN) {
+          socketRef.current.send(
+            JSON.stringify({
+              type: 'leaveTracking',
+              trackingNumber,
+            })
+          )
+        }
       }
 
       return updatedList
     })
   }
+
   const assignShipmentToDriver = async (trackingNumber, driverUsername) => {
     try {
       await axios.post('/driver/select-shipment', {
@@ -143,6 +195,7 @@ const DriverTracking = () => {
       console.error('Failed to assign shipment:', error)
     }
   }
+
   const onShipmentSelect = (trackingNumber) => {
     const driverUsername = sessionStorage.getItem('driverUsername')
     console.log('Assigning shipment to driver:', driverUsername)
@@ -153,6 +206,7 @@ const DriverTracking = () => {
     <div className="driver-tracking-container">
       <h2>Driver Tracking</h2>
       <h3>Select Shipments to Track:</h3>
+
       {shipments.length > 0 ? (
         <table>
           <thead>
@@ -181,38 +235,37 @@ const DriverTracking = () => {
       ) : (
         <p>Loading shipments or no shipments available.</p>
       )}
+
       <button className="logout-btn" onClick={handleLogout}>
         Logout
       </button>
-      {location && (
-        <LoadScript googleMapsApiKey={VITE_APP_GOOGLE_MAP}>
-          <GoogleMap
-            mapContainerClassName="map-container"
-            center={{ lat: location.latitude, lng: location.longitude }}
-            zoom={15}
-            onLoad={(map) => setMapInstance(map)}
-          >
-            <Marker
-              position={{ lat: location.latitude, lng: location.longitude }}
-              onLoad={(marker) => (markerRef.current = marker)}
-              icon={
-                window.google?.maps
-                  ? {
-                      url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-                      scaledSize: new window.google.maps.Size(40, 40),
-                    }
-                  : undefined
-              }
-            />
-            {mapInstance && (
-              <MapCenterUpdater
-                lat={location.latitude}
-                lng={location.longitude}
-                map={mapInstance}
-              />
-            )}
-          </GoogleMap>
-        </LoadScript>
+
+      {isLoaded && location && (
+        <GoogleMap 
+        mapContainerClassName="map-container"
+        center={{ lat: location.latitude, lng: location.longitude }} 
+        zoom={15}
+        >
+          <Marker 
+          position={{ lat: location.latitude, lng: location.longitude }}
+          onLoad={(marker) => (markerRef.current = marker)} 
+          icon={
+            window.google?.maps
+              ? {
+                  url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
+                  scaledSize: new window.google.maps.Size(40, 40),
+                }
+              : undefined
+          }
+        />
+          {mapInstance && 
+          <MapCenterUpdater 
+          lat={location.latitude} 
+          lng={location.longitude} 
+          map={mapInstance} 
+          />
+          }
+        </GoogleMap>
       )}
     </div>
   )

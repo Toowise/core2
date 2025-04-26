@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
-import { io } from 'socket.io-client'
 import './ShipmentInfo.scss'
 import packageimg from './../../../assets/brand/package.jpg'
 
@@ -10,32 +9,58 @@ const ShipmentInfo = ({ data }) => {
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
-    const socket = io('https://backend-core2.axleshift.com', {
-      transports: ['websocket', 'polling'],
-    })
-    socket.emit('joinRoom', data.trackingNumber)
+    const socket = new WebSocket('wss://backend-core2.axleshift.com')
 
-    socket.on('shipmentLocationUpdate', (update) => {
-      setShipmentData((prev) => ({ ...prev, ...update }))
-    })
-
-    socket.on('statusChanged', ({ newStatus }) => {
-      setShipmentData((prev) => ({
-        ...prev,
-        status: newStatus,
-        events: [
-          ...prev.events,
-          {
-            status: newStatus,
-            date: new Date().toISOString(),
-            time: new Date().toLocaleTimeString(),
-            location: `${prev.latitude}, ${prev.longitude}`,
-          },
-        ],
+    socket.addEventListener('open', () => {
+      // Join tracking when socket opens
+      socket.send(JSON.stringify({
+        type: 'joinTracking',
+        trackingNumber: data.trackingNumber,
       }))
     })
 
-    return () => socket.disconnect()
+    socket.addEventListener('message', (event) => {
+      try {
+        const message = JSON.parse(event.data)
+
+        if (message.type === 'shipmentLocationUpdate') {
+          const update = message.data
+          setShipmentData((prev) => ({
+            ...prev,
+            ...update,
+          }))
+        }
+
+        if (message.type === 'statusChanged') {
+          const { newStatus } = message.data
+          setShipmentData((prev) => ({
+            ...prev,
+            status: newStatus,
+            events: [
+              ...prev.events,
+              {
+                status: newStatus,
+                date: new Date().toISOString(),
+                time: new Date().toLocaleTimeString(),
+                location: `${prev.latitude}, ${prev.longitude}`,
+              },
+            ],
+          }))
+        }
+      } catch (error) {
+        console.error('WebSocket message handling error:', error)
+      }
+    })
+
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: 'leaveTracking',
+          trackingNumber: data.trackingNumber,
+        }))
+      }
+      socket.close()
+    }
   }, [data.trackingNumber])
   return (
     <div className="shipment-container">

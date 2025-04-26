@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import {
   CCard,
   CCardBody,
@@ -12,16 +12,16 @@ import {
   CTableDataCell,
   CSpinner,
 } from '@coreui/react'
-import io from 'socket.io-client'
 
 const DriverManagement = () => {
   const [shipments, setShipments] = useState([])
   const [loading, setLoading] = useState(true)
+  const socketRef = useRef(null)
 
   useEffect(() => {
     const fetchShipments = async () => {
       try {
-        const res = await fetch('http://localhost:5052/driver/shipments')
+        const res = await fetch('https://backend-core2.axleshift.com/driver/shipments')
         const data = await res.json()
         setShipments(data)
       } catch (error) {
@@ -33,31 +33,46 @@ const DriverManagement = () => {
 
     fetchShipments()
 
-    const socket = io('http://localhost:5052', {
-      transports: ['websocket', 'polling'],
-    })
+    // Connect to WebSocket
+    socketRef.current = new WebSocket('wss://backend-core2.axleshift.com')
 
-    // Listen for shipment location updates
-    socket.on('shipmentLocationUpdate', (data) => {
-      // Update the state with the new location data
-      setShipments((prevShipments) =>
-        prevShipments.map((shipment) =>
-          shipment.trackingNumber === data.trackingNumber
-            ? {
-                ...shipment,
-                latitude: data.latitude,
-                longitude: data.longitude,
-                updated_at: data.updated_at,
-                driverUsername: data.driverUsername,
-              }
-            : shipment,
-        ),
-      )
-    })
+    socketRef.current.onopen = () => {
+      console.log('WebSocket connected (DriverManagement)')
+    }
 
-    // Cleanup the socket connection when the component unmounts
+    socketRef.current.onmessage = (event) => {
+      const message = JSON.parse(event.data)
+
+      if (message.type === 'shipmentLocationUpdate') {
+        const { trackingNumber, latitude, longitude, updated_at, driverUsername } = message.data
+
+        setShipments((prevShipments) =>
+          prevShipments.map((shipment) =>
+            shipment.trackingNumber === trackingNumber
+              ? {
+                  ...shipment,
+                  latitude,
+                  longitude,
+                  updated_at,
+                  driverUsername,
+                }
+              : shipment
+          )
+        )
+      }
+    }
+
+    socketRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error)
+    }
+
+    socketRef.current.onclose = () => {
+      console.log('WebSocket disconnected')
+    }
+
+    // Cleanup
     return () => {
-      socket.disconnect()
+      socketRef.current?.close()
     }
   }, [])
 
@@ -66,7 +81,7 @@ const DriverManagement = () => {
       <CCol>
         <CCard className="mb-4 shadow-sm">
           <CCardBody>
-            <h4 className="mb-3">Active Shipments </h4>
+            <h4 className="mb-3">Active Shipments</h4>
             {loading ? (
               <CSpinner color="primary" />
             ) : (

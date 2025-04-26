@@ -15,13 +15,7 @@ import {
 import CIcon from '@coreui/icons-react'
 import PropTypes from 'prop-types'
 import { cilBell, cilMenu, cilSun, cilMoon, cilContrast } from '@coreui/icons'
-import io from 'socket.io-client'
 import { AppHeaderDropdown } from './header/index'
-
-const socket = io(VITE_SOCKET_URL, {
-  transports: ['websocket', 'polling'],
-  withCredentials: true,
-})
 
 const AppHeader = ({ admin = false }) => {
   const headerRef = useRef()
@@ -33,28 +27,45 @@ const AppHeader = ({ admin = false }) => {
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
   useEffect(() => {
+    const socket = new WebSocket(VITE_SOCKET_URL.replace(/^http/, 'ws'))
+
     document.addEventListener('scroll', () => {
       headerRef.current &&
         headerRef.current.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0)
     })
 
-    // Listen for real-time shipment updates
-    socket.on('shipmentUpdate', (update) => {
-      if (update.critical) {
-        setNotifications((prev) => [
-          {
-            ...update,
-            message: update.message,
-          },
-          ...prev,
-        ])
-        setUnreadCount((prev) => prev + 1)
+    socket.addEventListener('open', () => {
+      console.log('WebSocket connection opened')
+    })
+
+    socket.addEventListener('message', (event) => {
+      try {
+        const message = JSON.parse(event.data)
+
+        if (message.type === 'shipmentUpdate') {
+          const update = message.data
+          setNotifications((prev) => [
+            {
+              ...update,
+              message: `Shipment ${update.trackingNumber} updated to ${update.status}`,
+            },
+            ...prev,
+          ])
+          setUnreadCount((prev) => prev + 1)
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error)
       }
     })
 
-    return () => socket.off('shipmentUpdate')
-  }, [])
+    socket.addEventListener('close', () => {
+      console.log('WebSocket connection closed')
+    })
 
+    return () => {
+      socket.close()
+    }
+  }, [])
   const toggleDropdown = () => {
     setDropdownVisible(!dropdownVisible)
     setUnreadCount(0) //

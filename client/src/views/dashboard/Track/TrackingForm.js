@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import axios from '../../../api/axios.js'
-import io from 'socket.io-client'
 import 'leaflet/dist/leaflet.css'
 import ShipmentInfo from '../ShipmentInfo/ShipmentInfo.js'
 import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from '@react-google-maps/api'
 import { VITE_APP_GOOGLE_MAP, VITE_SOCKET_URL } from '../../../config.js'
 
 const GOOGLE_MAPS_LIBRARIES = ['places']
+
 const MapCenterUpdater = ({ lat, lng, map }) => {
   useEffect(() => {
     if (map && lat && lng) {
@@ -32,40 +32,57 @@ const TrackingForm = () => {
   const [socket, setSocket] = useState(null)
   const markerRef = useRef(null)
   const [directions, setDirections] = useState(null)
-  const isSocketInitialized = useRef(false)
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: VITE_APP_GOOGLE_MAP,
     libraries: GOOGLE_MAPS_LIBRARIES,
   })
 
   useEffect(() => {
-    const newSocket = io(VITE_SOCKET_URL, { autoConnect: false })
-    setSocket(newSocket)
+    const ws = new WebSocket(VITE_SOCKET_URL)
+    setSocket(ws)
+
     return () => {
-      newSocket.disconnect()
+      ws.close()
     }
   }, [])
 
   useEffect(() => {
-    if (!trackingNumber || !socket || isSocketInitialized.current) return
+    if (!socket || socket.readyState !== WebSocket.OPEN) return
 
-    socket.connect()
-    socket.emit('joinTracking', trackingNumber)
-    isSocketInitialized.current = true
+    const joinTracking = () => {
+      const joinMessage = JSON.stringify({
+        action: 'joinTracking',
+        trackingNumber,
+      })
+      socket.send(joinMessage)
+    }
 
-    socket.on('shipmentLocationUpdate', (updatedShipment) => {
-      setShipmentData((prevData) => ({
-        ...prevData,
-        latitude: updatedShipment.latitude,
-        longitude: updatedShipment.longitude,
-        updated_at: new Date(updatedShipment.updated_at),
-      }))
+    socket.addEventListener('open', joinTracking)
+
+    socket.addEventListener('message', (event) => {
+      const message = JSON.parse(event.data)
+
+      if (message.type === 'shipmentLocationUpdate') {
+        const updatedShipment = message.data
+        setShipmentData((prevData) => ({
+          ...prevData,
+          latitude: updatedShipment.latitude,
+          longitude: updatedShipment.longitude,
+          updated_at: new Date(updatedShipment.updated_at),
+        }))
+      }
     })
 
     return () => {
-      socket.emit('leaveTracking', trackingNumber)
-      socket.off('shipmentLocationUpdate')
-      isSocketInitialized.current = false
+      if (socket.readyState === WebSocket.OPEN) {
+        const leaveMessage = JSON.stringify({
+          action: 'leaveTracking',
+          trackingNumber,
+        })
+        socket.send(leaveMessage)
+      }
+      socket.removeEventListener('open', joinTracking)
+      socket.removeEventListener('message', () => {})
     }
   }, [trackingNumber, socket])
 

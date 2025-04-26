@@ -17,19 +17,13 @@ const User = require('./models/User');
 const Driver = require('./models/Driver');
 const TrackData = require('./models/TrackData');
 const PORT = process.env.PORT || 5052;
+const WebSocket = require('ws');
+const clients = new Map();
 let dbReady = false;
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(server,{
-  transports: ['websocket', 'polling'],
-  cors: {
-    origin: ['https://core2.axleshift.com','http://localhost:3000'],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-});
-
+const wss = new WebSocket.Server({ server });
 // Firebase Admin Initialization
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -61,103 +55,119 @@ mongoose.connect(mongoURI)
   });
 
 // Socket.IO Connection and Driver Tracking
-io.on("connection", (socket) => {
-  console.log("A client connected:", socket.id);
+wss.on('connection', (socket) => {
+  console.log('New WebSocket client connected.');
 
-  // Client joins a tracking room
-  socket.on("joinTracking", (trackingNumber) => {
-    console.log(`Client joined tracking: ${trackingNumber}`);
-    socket.join(trackingNumber);
-  });
+  clients.set(socket, { trackingNumbers: [] });
 
-  socket.on("leaveTracking", (trackingNumber) => {
-    console.log(`Client left tracking: ${trackingNumber}`);
-    socket.leave(trackingNumber);
-  });
-
-  // Driver updates location
-  socket.on("driverLocationUpdate", async (data) => {
-    const trackingNumbers = Array.isArray(data.trackingNumber)
-      ? data.trackingNumber
-      : [data.trackingNumber];
-
-    if (!trackingNumbers.length) return;
-
-    const updatedAt = new Date();
-
+  socket.on('message', async (message) => {
     try {
-      await TrackData.updateMany(
-        { trackingNumber: { $in: trackingNumbers } },
-        {
-          $set: {
-            latitude: data.latitude,
-            longitude: data.longitude,
-            updated_at: updatedAt,
-            driverUsername: data.driverUsername,
-          },
+      const parsed = JSON.parse(message);
+
+      if (parsed.type === 'joinTracking') {
+        const { trackingNumber } = parsed;
+        if (trackingNumber) {
+          const clientData = clients.get(socket);
+          clientData.trackingNumbers.push(trackingNumber);
+          console.log(`Client joined tracking: ${trackingNumber}`);
         }
-      );
+      }
 
-      trackingNumbers.forEach((tn) => {
-        io.to(tn).emit("shipmentLocationUpdate", {
-          trackingNumber: tn,
-          latitude: data.latitude,
-          longitude: data.longitude,
-          updated_at: updatedAt,
-        });
-      });
-    } catch (error) {
-      console.error("Error updating shipment location:", error);
-    }
-  });
+      if (parsed.type === 'leaveTracking') {
+        const { trackingNumber } = parsed;
+        if (trackingNumber) {
+          const clientData = clients.get(socket);
+          clientData.trackingNumbers = clientData.trackingNumbers.filter(tn => tn !== trackingNumber);
+          console.log(`Client left tracking: ${trackingNumber}`);
+        }
+      }
 
-  // General location update that also checks status
-  socket.on("locationUpdate", async ({ trackingNumber, latitude, longitude }) => {
-    if (!trackingNumber || !latitude || !longitude) return;
+      if (parsed.type === 'driverLocationUpdate') {
+        const { trackingNumber, latitude, longitude, driverUsername } = parsed;
+        const trackingNumbers = Array.isArray(trackingNumber) ? trackingNumber : [trackingNumber];
 
-    try {
-      const shipment = await TrackData.findOne({ trackingNumber });
-      if (!shipment) return;
-      const locationName = await getAddressFromCoordinates(latitude, longitude) || 
-      `${latitude}, ${longitude}`;
-      shipment.latitude = latitude;
-      shipment.longitude = longitude;
+        const updatedAt = new Date();
 
-      const newStatus = updateShipmentStatus(shipment, { lat: latitude, lon: longitude });
+        await TrackData.updateMany(
+          { trackingNumber: { $in: trackingNumbers } },
+          {
+            $set: {
+              latitude,
+              longitude,
+              updated_at: updatedAt,
+              driverUsername,
+            },
+          }
+        );
 
-      if (newStatus !== shipment.status) {
-        shipment.status = newStatus;
-        shipment.events.push({
-          status: newStatus,
-          date: new Date().toISOString(),
-          location: locationName,
-          coordinates: { latitude, longitude },
-        });
-
-        io.to(trackingNumber).emit("statusChanged", {
-          trackingNumber,
-          newStatus,
+        broadcastToTracking(trackingNumbers, {
+          type: 'shipmentLocationUpdate',
+          data: { trackingNumbers, latitude, longitude, updated_at: updatedAt },
         });
       }
 
-      await shipment.save();
+      if (parsed.type === 'locationUpdate') {
+        const { trackingNumber, latitude, longitude } = parsed;
 
-      io.to(trackingNumber).emit("shipmentLocationUpdate", {
-        trackingNumber,
-        latitude,
-        longitude,
-        status: shipment.status,
-      });
+        if (!trackingNumber || !latitude || !longitude) return;
 
-    } catch (err) {
-      console.error("Error processing locationUpdate:", err);
+        const shipment = await TrackData.findOne({ trackingNumber });
+        if (!shipment) return;
+
+        const locationName = await getAddressFromCoordinates(latitude, longitude) || 
+        `${latitude}, ${longitude}`;
+
+        shipment.latitude = latitude;
+        shipment.longitude = longitude;
+
+        const newStatus = updateShipmentStatus(shipment, { lat: latitude, lon: longitude });
+
+        if (newStatus !== shipment.status) {
+          shipment.status = newStatus;
+          shipment.events.push({
+            status: newStatus,
+            date: new Date().toISOString(),
+            location: locationName,
+            coordinates: { latitude, longitude },
+          });
+
+          await shipment.save();
+
+          broadcastToTracking([trackingNumber], {
+            type: 'statusChanged',
+            data: { trackingNumber, newStatus },
+          });
+        } else {
+          await shipment.save();
+        }
+
+        broadcastToTracking([trackingNumber], {
+          type: 'shipmentLocationUpdate',
+          data: { trackingNumber, latitude, longitude, status: shipment.status },
+        });
+      }
+
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error.message);
     }
   });
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
+  socket.on('close', () => {
+    console.log('WebSocket client disconnected.');
+    clients.delete(socket);
   });
 });
+
+// Helper: broadcast to clients watching specific tracking numbers
+function broadcastToTracking(trackingNumbers, message) {
+  clients.forEach(({ trackingNumbers: clientTrackingNumbers }, clientSocket) => {
+    if (trackingNumbers.some(tn => clientTrackingNumbers.includes(tn))) {
+      if (clientSocket.readyState === WebSocket.OPEN) {
+        clientSocket.send(JSON.stringify(message));
+      }
+    }
+  });
+}
 
 
 // Helper Function to Get Geolocation
@@ -590,7 +600,6 @@ const lastStatusMap = new Map();
 
 setInterval(async () => {
   if (!dbReady) return;
-
   try {
     const recentShipments = await TrackData.find().sort({ updatedAt: -1 }).limit(10);
 
@@ -598,24 +607,27 @@ setInterval(async () => {
       const lastStatus = lastStatusMap.get(shipment.trackingNumber);
 
       if (criticalStatuses.includes(shipment.status) && shipment.status !== lastStatus) {
-        lastStatusMap.set(shipment.trackingNumber, shipment.status); 
+        lastStatusMap.set(shipment.trackingNumber, shipment.status);
 
-        io.emit("shipmentUpdate", {
-          trackingNumber: shipment.trackingNumber,
-          status: shipment.status,
-          location: shipment.location,
-          timestamp: new Date(shipment.updatedAt).toLocaleString(),
-          critical: true,
-          message: getStatusMessage(shipment.status, shipment.location),
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(
+              JSON.stringify({
+                type: "shipmentUpdate",
+                data: {
+                  trackingNumber: shipment.trackingNumber,
+                  status: shipment.status,
+                },
+              })
+            );
+          }
         });
-
-        console.log(` Emitted critical update: ${shipment.trackingNumber} - ${shipment.status}`);
       }
     });
   } catch (err) {
-    console.error(" Error during status check:", err);
+    console.error("Error broadcasting shipment updates:", err);
   }
-}, 10000);
+}, 60000);
 
 function getStatusMessage(status, location) {
   switch (status) {
