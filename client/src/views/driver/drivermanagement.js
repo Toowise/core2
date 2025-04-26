@@ -56,8 +56,8 @@ const DriverManagement = () => {
                   updated_at,
                   driverUsername,
                 }
-              : shipment
-          )
+              : shipment,
+          ),
         )
       }
     }

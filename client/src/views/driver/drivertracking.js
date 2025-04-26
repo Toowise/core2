@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { GoogleMap, useJsApiLoader, Marker, LoadScript} from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader, Marker, LoadScript } from '@react-google-maps/api'
 import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import axios from '../../api/axios'
@@ -33,7 +33,7 @@ const DriverTracking = () => {
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: VITE_APP_GOOGLE_MAP,
-    libraries: ['places']
+    libraries: ['places'],
   })
 
   // Load available shipments
@@ -93,7 +93,7 @@ const DriverTracking = () => {
                   trackingNumber,
                   latitude,
                   longitude,
-                })
+                }),
               )
             }
           })
@@ -102,7 +102,7 @@ const DriverTracking = () => {
           console.error('Geolocation error:', error)
           alert('Location tracking is disabled. Please enable GPS.')
         },
-        { enableHighAccuracy: true, maximumAge: 2000 }
+        { enableHighAccuracy: true, maximumAge: 2000 },
       )
 
       return () => navigator.geolocation.clearWatch(watchId)
@@ -120,7 +120,7 @@ const DriverTracking = () => {
       (error) => {
         console.error('Error getting initial location:', error)
       },
-      { enableHighAccuracy: true }
+      { enableHighAccuracy: true },
     )
   }, [])
 
@@ -166,7 +166,7 @@ const DriverTracking = () => {
             JSON.stringify({
               type: 'joinTracking',
               trackingNumber,
-            })
+            }),
           )
         }
         onShipmentSelect(trackingNumber)
@@ -176,7 +176,7 @@ const DriverTracking = () => {
             JSON.stringify({
               type: 'leaveTracking',
               trackingNumber,
-            })
+            }),
           )
         }
       }
@@ -241,30 +241,26 @@ const DriverTracking = () => {
       </button>
 
       {isLoaded && location && (
-        <GoogleMap 
-        mapContainerClassName="map-container"
-        center={{ lat: location.latitude, lng: location.longitude }} 
-        zoom={15}
+        <GoogleMap
+          mapContainerClassName="map-container"
+          center={{ lat: location.latitude, lng: location.longitude }}
+          zoom={15}
         >
-          <Marker 
-          position={{ lat: location.latitude, lng: location.longitude }}
-          onLoad={(marker) => (markerRef.current = marker)} 
-          icon={
-            window.google?.maps
-              ? {
-                  url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
-                  scaledSize: new window.google.maps.Size(40, 40),
-                }
-              : undefined
-          }
-        />
-          {mapInstance && 
-          <MapCenterUpdater 
-          lat={location.latitude} 
-          lng={location.longitude} 
-          map={mapInstance} 
+          <Marker
+            position={{ lat: location.latitude, lng: location.longitude }}
+            onLoad={(marker) => (markerRef.current = marker)}
+            icon={
+              window.google?.maps
+                ? {
+                    url: 'https://cdn-icons-png.flaticon.com/512/744/744465.png',
+                    scaledSize: new window.google.maps.Size(40, 40),
+                  }
+                : undefined
+            }
           />
-          }
+          {mapInstance && (
+            <MapCenterUpdater lat={location.latitude} lng={location.longitude} map={mapInstance} />
+          )}
         </GoogleMap>
       )}
     </div>

@@ -13,10 +13,12 @@ const ShipmentInfo = ({ data }) => {
 
     socket.addEventListener('open', () => {
       // Join tracking when socket opens
-      socket.send(JSON.stringify({
-        type: 'joinTracking',
-        trackingNumber: data.trackingNumber,
-      }))
+      socket.send(
+        JSON.stringify({
+          type: 'joinTracking',
+          trackingNumber: data.trackingNumber,
+        }),
+      )
     })
 
     socket.addEventListener('message', (event) => {
@@ -54,10 +56,12 @@ const ShipmentInfo = ({ data }) => {
 
     return () => {
       if (socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-          type: 'leaveTracking',
-          trackingNumber: data.trackingNumber,
-        }))
+        socket.send(
+          JSON.stringify({
+            type: 'leaveTracking',
+            trackingNumber: data.trackingNumber,
+          }),
+        )
       }
       socket.close()
     }
