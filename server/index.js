@@ -23,12 +23,7 @@ let dbReady = false;
 const app = express();
 const server = http.createServer(app);
 const io = socketIo (server,{
-  transports: ['websocket', 'polling'],
-  cors: {
-    origin: ['https://core2.axleshift.com','http://localhost:3000'],
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  transports: ['websocket', 'polling']
 });
 
 // Firebase Admin Initialization

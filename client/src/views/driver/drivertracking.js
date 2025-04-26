@@ -38,7 +38,7 @@ const DriverTracking = () => {
 
   useEffect(() => {
     axios
-      .get('  /driver/shipments')
+      .get('/driver/shipments')
       .then((response) => {
         setShipments(Array.isArray(response.data) ? response.data : [])
       })

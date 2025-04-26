@@ -39,8 +39,9 @@ const Login = () => {
 
     try {
       const response = await axios.post('/login', { username, password })
-
-      // Proceed to 2FA step
+      console.log({ username, password })
+      console.log(response.data)
+      // Proceed to 2FA step  
       setStep(2)
     } catch (err) {
       console.error(err)
