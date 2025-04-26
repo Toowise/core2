@@ -38,7 +38,7 @@ const DriverTracking = () => {
 
   useEffect(() => {
     axios
-      .get('/driver/shipments')
+      .get('  /driver/shipments')
       .then((response) => {
         setShipments(Array.isArray(response.data) ? response.data : [])
       })
@@ -135,7 +135,7 @@ const DriverTracking = () => {
   }
   const assignShipmentToDriver = async (trackingNumber, driverUsername) => {
     try {
-      await axios.post('/api/driver/select-shipment', {
+      await axios.post('/driver/select-shipment', {
         trackingNumber,
         driverUsername,
       })
