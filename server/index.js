@@ -23,7 +23,7 @@ let dbReady = false;
 // Initialize Express & Server
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ server, path: '/ws' });
 // Firebase Admin Initialization
 if (!admin.apps.length) {
   admin.initializeApp({
