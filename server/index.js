@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
-const https = require('https');
+const http = require('https');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer')
@@ -22,7 +22,7 @@ const clients = new Map();
 let dbReady = false;
 // Initialize Express & Server
 const app = express();
-const server = https.createServer(app);
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 // Firebase Admin Initialization
 if (!admin.apps.length) {
