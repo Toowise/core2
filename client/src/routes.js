@@ -10,6 +10,7 @@ const DriverLogin = React.lazy(() => import('./views/driver/driverlogin'))
 const DriverTracking = React.lazy(() => import('./views/driver/drivertracking'))
 const AdminDashboard = React.lazy(() => import('./views/pages/admin/AdminDashboard'))
 const DriverManagement = React.lazy(() => import('./views/driver/drivermanagement'))
+const Reports = React.lazy(() => import('./views/pages/admin/Reports'))
 
 const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'))
 const ButtonGroups = React.lazy(() => import('./views/buttons/button-groups/ButtonGroups'))
@@ -78,6 +79,7 @@ const routes = [
     element: DriverManagement,
     adminOnly: true,
   },
+  { path: '/reports', name: 'Reports', element: Reports, adminOnly: true },
 ]
 
 export default routes

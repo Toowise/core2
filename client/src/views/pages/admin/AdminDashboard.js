@@ -37,9 +37,7 @@ const AdminDashboard = () => {
   const total = shipments.length
   const packageReceived = shipments.filter((s) => s.status === 'Package Received').length
   const outForDelivery = shipments.filter((s) => s.status === 'Out for Delivery').length
-  const pendingPickup = shipments.filter((s) =>
-    s.events?.some((e) => e.status === 'Pending for Pickup'),
-  ).length
+  const pendingPickup = shipments.filter((s) => s.status === 'Pending for Pickup').length
 
   const deliveryDates = shipments.map((s) => new Date(s.expected_delivery).toLocaleDateString())
 

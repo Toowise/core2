@@ -1,6 +1,6 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilHistory, cilLocationPin, cilSpreadsheet, cilTruck } from '@coreui/icons'
+import { cilGraph, cilHistory, cilLocationPin, cilSpreadsheet, cilTruck } from '@coreui/icons'
 import { CNavItem } from '@coreui/react'
 
 const _nav_admin = [
@@ -36,6 +36,15 @@ const _nav_admin = [
     name: 'Driver Management',
     to: '/drivermanagement',
     icon: <CIcon icon={cilTruck} customClassName="nav-icon" />,
+    badge: {
+      color: 'info',
+    },
+  },
+  {
+    component: CNavItem,
+    name: 'Reports',
+    to: '/reports',
+    icon: <CIcon icon={cilGraph} customClassName="nav-icon" />,
     badge: {
       color: 'info',
     },
