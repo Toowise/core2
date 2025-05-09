@@ -139,6 +139,7 @@ const DriverLogin = () => {
                         color="primary"
                         className="rounded"
                         onClick={() => navigate('/signup')}
+                        disabled
                       >
                         Signup
                       </CButton>

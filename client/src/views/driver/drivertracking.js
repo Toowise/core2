@@ -148,10 +148,18 @@ const DriverTracking = () => {
     }
   }, [location])
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('driverToken')
-    window.dispatchEvent(new Event('storage'))
-    navigate('/driverlogin')
+  const handleLogout = async () => {
+    const driverUsername = sessionStorage.getItem('driverUsername')
+
+    try {
+      await axios.post('https://backend-core2.axleshift.com/logout', { driverUsername })
+      sessionStorage.removeItem('driverToken')
+      sessionStorage.removeItem('driverUsername')
+      window.dispatchEvent(new Event('storage'))
+      navigate('/driverlogin')
+    } catch (err) {
+      console.error('Logout failed:', err)
+    }
   }
 
   const handleShipmentSelect = (trackingNumber) => {

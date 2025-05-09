@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   CCard,
   CCardBody,
@@ -11,110 +11,81 @@ import {
   CTableRow,
   CTableDataCell,
   CSpinner,
+  CFormInput,
 } from '@coreui/react'
 
 const DriverManagement = () => {
-  const [shipments, setShipments] = useState([])
+  const [drivers, setDrivers] = useState([])
   const [loading, setLoading] = useState(true)
-  const socketRef = useRef(null)
+  const [filterTerm, setFilterTerm] = useState('')
 
   useEffect(() => {
-    const fetchShipments = async () => {
+    const fetchDrivers = async () => {
       try {
-        const res = await fetch('https://backend-core2.axleshift.com/driver/shipments')
+        const res = await fetch('https//backend-core2.axleshift.com/api/drivers')
         const data = await res.json()
-        setShipments(data)
+        setDrivers(data)
       } catch (error) {
-        console.error('Failed to fetch shipments:', error)
+        console.error('Failed to fetch drivers:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchShipments()
+    fetchDrivers()
+    const intervalId = setInterval(fetchDrivers, 2000)
 
-    // Connect to WebSocket
-    socketRef.current = new WebSocket('wss://backend-core2.axleshift.com')
-
-    socketRef.current.onopen = () => {
-      console.log('WebSocket connected (DriverManagement)')
-    }
-
-    socketRef.current.onmessage = (event) => {
-      const message = JSON.parse(event.data)
-
-      if (message.type === 'shipmentLocationUpdate') {
-        const { trackingNumber, latitude, longitude, updated_at, driverUsername } = message.data
-
-        setShipments((prevShipments) =>
-          prevShipments.map((shipment) =>
-            shipment.trackingNumber === trackingNumber
-              ? {
-                  ...shipment,
-                  latitude,
-                  longitude,
-                  updated_at,
-                  driverUsername,
-                }
-              : shipment,
-          ),
-        )
-      }
-    }
-
-    socketRef.current.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
-
-    socketRef.current.onclose = () => {
-      console.log('WebSocket disconnected')
-    }
-
-    // Cleanup
-    return () => {
-      socketRef.current?.close()
-    }
+    return () => clearInterval(intervalId)
   }, [])
+  const filteredDrivers = drivers.filter((d) => {
+    const term = filterTerm.toLowerCase()
+
+    const matchesName = d.name.toLowerCase().includes(term)
+    const matchesPlate = d.vehicle?.number?.toLowerCase().includes(term)
+    const matchesLicense = d.licenseNumber?.toLowerCase().includes(term)
+    const matchesVehicleType = d.vehicle?.type?.toLowerCase().includes(term)
+    const matchesOnDuty = (d.onDuty ? 'Yes' : 'No').includes(term)
+
+    return matchesName || matchesPlate || matchesLicense || matchesVehicleType || matchesOnDuty
+  })
 
   return (
     <CRow>
       <CCol>
         <CCard className="mb-4 shadow-sm">
           <CCardBody>
-            <h4 className="mb-3">Active Shipments</h4>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h4>Driver Management</h4>
+              <CFormInput
+                type="text"
+                placeholder="Search name, plate, or license"
+                value={filterTerm}
+                onChange={(e) => setFilterTerm(e.target.value)}
+                className="form-control"
+                style={{ maxWidth: '250px' }}
+              />
+            </div>
             {loading ? (
               <CSpinner color="primary" />
             ) : (
               <CTable striped responsive bordered hover>
                 <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell>Tracking Number</CTableHeaderCell>
-                    <CTableHeaderCell>Status</CTableHeaderCell>
-                    <CTableHeaderCell>Driver</CTableHeaderCell>
-                    <CTableHeaderCell>Delivery Address</CTableHeaderCell>
-                    <CTableHeaderCell>Live Location</CTableHeaderCell>
+                    <CTableHeaderCell>Name</CTableHeaderCell>
+                    <CTableHeaderCell>Vehicle Type</CTableHeaderCell>
+                    <CTableHeaderCell>On Duty</CTableHeaderCell>
+                    <CTableHeaderCell>Plate Number</CTableHeaderCell>
+                    <CTableHeaderCell>License Number</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
-                  {shipments.map((s) => (
-                    <CTableRow key={s.trackingNumber}>
-                      <CTableDataCell>{s.trackingNumber}</CTableDataCell>
-                      <CTableDataCell>{s.status || 'Unknown'}</CTableDataCell>
-                      <CTableDataCell>{s.driverUsername || 'Unassigned'}</CTableDataCell>
-                      <CTableDataCell>{s.deliveryAddress}</CTableDataCell>
-                      <CTableDataCell>
-                        {s.latitude && s.longitude ? (
-                          <a
-                            href={`https://www.google.com/maps?q=${s.latitude},${s.longitude}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            View on Map
-                          </a>
-                        ) : (
-                          'Not Available'
-                        )}
-                      </CTableDataCell>
+                  {filteredDrivers.map((d) => (
+                    <CTableRow key={d._id}>
+                      <CTableDataCell>{d.name}</CTableDataCell>
+                      <CTableDataCell>{d.vehicle?.type}</CTableDataCell>
+                      <CTableDataCell>{d.onDuty ? 'Yes' : 'No'}</CTableDataCell>
+                      <CTableDataCell>{d.vehicle?.number || 'Unassigned'}</CTableDataCell>
+                      <CTableDataCell>{d.licenseNumber}</CTableDataCell>
                     </CTableRow>
                   ))}
                 </CTableBody>

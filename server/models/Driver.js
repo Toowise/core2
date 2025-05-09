@@ -7,6 +7,11 @@ const DriverSchema = new mongoose.Schema({
   password: { type: String, required: true },
   userRole: { type: String, default: 'driver' },
   assignedShipments: [String],
+  phone: { type: String },
+  licenseNumber: { type: String },
+  status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' },
+  onDuty: { type: Boolean, default: false },
+  vehicle: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle'},
 });
 
 DriverSchema.pre("save", async function(next) {

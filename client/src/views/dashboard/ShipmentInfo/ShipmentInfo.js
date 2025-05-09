@@ -9,7 +9,7 @@ const ShipmentInfo = ({ data }) => {
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
-    const socket = new WebSocket('wss://backend-core2.axleshift.com')
+    const socket = new WebSocket('wss://backend-core2.axleshift.com/ws')
 
     socket.addEventListener('open', () => {
       // Join tracking when socket opens

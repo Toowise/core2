@@ -13,6 +13,7 @@ const admin = require("firebase-admin");
 const rateLimit = require('express-rate-limit');
 const serviceAccount = require("./firebase-service-account.json");
 const shipmentsRoutes = require('./routes/shipments');
+const driversRoutes = require('./routes/drivers');
 const User = require('./models/User'); 
 const Driver = require('./models/Driver');
 const TrackData = require('./models/TrackData');
@@ -38,6 +39,7 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/shipments', shipmentsRoutes);
+app.use('/api/drivers', driversRoutes);
 // MongoDB Connection
 const mongoURI = process.env.mongoURIProduction;
 mongoose.connect(mongoURI)
@@ -388,17 +390,37 @@ app.post('/driverlogin', async (req, res) => {
     // Check password
     const isMatch = await bcryptjs.compare(password, driver.password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid credentials' });
+    driver.onDuty = true;
+    await driver.save();
 
     // Generate JWT token
     const token = jwt.sign(
       { id: driver._id, userRole: 'driver' },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' } // Token valid for 7 days
+      { expiresIn: '1h' } 
     );
-    res.json({ success: true, token, driver: { id: driver._id, username: driver.username, email: driver.email } });
+    res.json({ success: true, token, driver: { id: driver._id, username: driver.username, email: driver.email, onDuty: driver.onDuty } });
   } catch (error) {
     console.error("Driver login error:", error);
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+// Driver logout
+app.post('/logout', async (req, res) => {
+  try {
+    const { driverUsername } = req.body;
+
+    const driver = await Driver.findOne({username: driverUsername});
+    if (!driver) {
+      return res.status(404).json({ success: false, message: 'Driver not found' });
+    }
+    driver.onDuty = false;
+    await driver.save(); 
+
+    res.status(200).json({ success: true, message: 'Logged out successfully' });
+  } catch (err) {
+    console.error('Logout error:', err);
+    res.status(500).json({ success: false, message: 'Logout failed' });
   }
 });
 
