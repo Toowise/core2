@@ -22,7 +22,7 @@ const DriverManagement = () => {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-        const res = await fetch('https//backend-core2.axleshift.com/api/drivers')
+        const res = await fetch('https://backend-core2.axleshift.com/api/drivers')
         const data = await res.json()
         setDrivers(data)
       } catch (error) {

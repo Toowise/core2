@@ -406,7 +406,7 @@ app.post('/driverlogin', async (req, res) => {
   }
 });
 // Driver logout
-app.post('/logout', async (req, res) => {
+app.post('/driverlogout', async (req, res) => {
   try {
     const { driverUsername } = req.body;
 

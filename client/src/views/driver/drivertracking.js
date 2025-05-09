@@ -152,7 +152,7 @@ const DriverTracking = () => {
     const driverUsername = sessionStorage.getItem('driverUsername')
 
     try {
-      await axios.post('https://backend-core2.axleshift.com/logout', { driverUsername })
+      await axios.post('/driverlogout', { driverUsername })
       sessionStorage.removeItem('driverToken')
       sessionStorage.removeItem('driverUsername')
       window.dispatchEvent(new Event('storage'))
