@@ -23,6 +23,10 @@ const DriverManagement = () => {
     const fetchDrivers = async () => {
       try {
         const res = await fetch('https://backend-core2.axleshift.com/api/drivers')
+        if (!res.ok) {
+          const text = await res.text()
+          throw new Error(`API error ${res.status}: ${text}`)
+        }
         const data = await res.json()
         setDrivers(data)
       } catch (error) {

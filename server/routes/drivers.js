@@ -6,7 +6,7 @@ require('../models/Vehicle')
 router.get('/', async (req, res) => {
   try {
     const drivers = await Driver.find().populate('vehicle')
-    res.status(200).json(drivers)
+    res.json(drivers)
   } catch (err) {
     console.error('Error fetching drivers:', err)
     res.status(500).json({ error: 'Failed to fetch drivers' })
