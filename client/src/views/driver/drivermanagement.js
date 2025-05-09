@@ -48,9 +48,17 @@ const DriverManagement = () => {
     const matchesPlate = d.vehicle?.number?.toLowerCase().includes(term)
     const matchesLicense = d.licenseNumber?.toLowerCase().includes(term)
     const matchesVehicleType = d.vehicle?.type?.toLowerCase().includes(term)
+    const matchesPhone = d.phone?.toLowerCase().includes(term)
     const matchesOnDuty = (d.onDuty ? 'Yes' : 'No').includes(term)
 
-    return matchesName || matchesPlate || matchesLicense || matchesVehicleType || matchesOnDuty
+    return (
+      matchesName ||
+      matchesPlate ||
+      matchesLicense ||
+      matchesVehicleType ||
+      matchesOnDuty ||
+      matchesPhone
+    )
   })
 
   return (
@@ -79,6 +87,7 @@ const DriverManagement = () => {
                     <CTableHeaderCell>Vehicle Type</CTableHeaderCell>
                     <CTableHeaderCell>On Duty</CTableHeaderCell>
                     <CTableHeaderCell>Plate Number</CTableHeaderCell>
+                    <CTableHeaderCell>Phone Number</CTableHeaderCell>
                     <CTableHeaderCell>License Number</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
@@ -89,6 +98,7 @@ const DriverManagement = () => {
                       <CTableDataCell>{d.vehicle?.type}</CTableDataCell>
                       <CTableDataCell>{d.onDuty ? 'Yes' : 'No'}</CTableDataCell>
                       <CTableDataCell>{d.vehicle?.number || 'Unassigned'}</CTableDataCell>
+                      <CTableDataCell>{d.phone}</CTableDataCell>
                       <CTableDataCell>{d.licenseNumber}</CTableDataCell>
                     </CTableRow>
                   ))}

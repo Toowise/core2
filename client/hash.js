@@ -1,6 +1,6 @@
 const bcryptjs = require('bcryptjs')
 
-const plainPassword = 'bananas47!'
+const plainPassword = 'Francis03'
 
 bcryptjs.hash(plainPassword, 10, (err, hashedPassword) => {
   if (err) {
