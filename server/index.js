@@ -289,8 +289,14 @@ app.post('/verify-2fa', async (req, res) => {
   delete twoFACodes[username]
 
   const user = await User.findOne({ username })
+  if (!user) return res.status(404).json({ message: 'User not found' })
+
   const token = jwt.sign(
-    { username: user.username, userRole: user.userRole },
+    { 
+      id: user._id,
+      username: user.username, 
+      userRole: user.userRole 
+    },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   )
@@ -298,6 +304,7 @@ app.post('/verify-2fa', async (req, res) => {
   res.json({
     token,
     user: {
+      id: user._id,
       username: user.username,
       userRole: user.userRole,
     },

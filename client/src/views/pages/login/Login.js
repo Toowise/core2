@@ -29,6 +29,8 @@ const Login = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resendTimer, setResendTimer] = useState(null)
   const navigate = useNavigate()
   const { setUser } = useStateContext()
 
@@ -69,6 +71,29 @@ const Login = () => {
       setErrorMessage(err.response?.data?.message || '2FA verification failed.')
     } finally {
       setIsLoading(false)
+    }
+  }
+  const handleResendCode = async () => {
+    try {
+      await axios.post('/resend-2fa-code', { username })
+      setErrorMessage(null)
+
+      setResendCooldown(60)
+
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      setResendTimer(timer)
+    } catch (err) {
+      console.error(err)
+      setErrorMessage(err.response?.data?.message || 'Failed to resend code.')
     }
   }
 
@@ -155,6 +180,20 @@ const Login = () => {
                       {step === 1 ? 'Login' : 'Verify Code'}
                     </CButton>
                   </div>
+                  {step === 2 && (
+                    <div className="d-flex justify-content-center mb-3">
+                      <CButton
+                        type="button"
+                        color="link"
+                        size="sm"
+                        className="p-0"
+                        onClick={handleResendCode}
+                        disabled={resendCooldown > 0}
+                      >
+                        {resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Resend Code'}
+                      </CButton>
+                    </div>
+                  )}
 
                   {step === 1 && (
                     <p>

@@ -27,7 +27,7 @@ MapCenterUpdater.propTypes = {
 const TrackingForm = () => {
   const [trackingNumber, setTrackingNumber] = useState('')
   const [shipmentData, setShipmentData] = useState(null)
-  const [zoom] = useState(13)
+  const [zoom] = useState(17)
   const [mapInstance, setMapInstance] = useState(null)
   const [socket, setSocket] = useState(null)
   const markerRef = useRef(null)
@@ -47,21 +47,16 @@ const TrackingForm = () => {
   }, [])
 
   useEffect(() => {
-    if (!socket || socket.readyState !== WebSocket.OPEN) return
+    if (!socket || socket.readyState !== WebSocket.OPEN || !trackingNumber) return
 
-    const joinTracking = () => {
-      const joinMessage = JSON.stringify({
-        action: 'joinTracking',
-        trackingNumber,
-      })
-      socket.send(joinMessage)
-    }
+    const joinMessage = JSON.stringify({
+      action: 'joinTracking',
+      trackingNumber,
+    })
+    socket.send(joinMessage)
 
-    socket.addEventListener('open', joinTracking)
-
-    socket.addEventListener('message', (event) => {
+    const handleMessage = (event) => {
       const message = JSON.parse(event.data)
-
       if (message.type === 'shipmentLocationUpdate') {
         const updatedShipment = message.data
         setShipmentData((prevData) => ({
@@ -71,7 +66,9 @@ const TrackingForm = () => {
           updated_at: new Date(updatedShipment.updated_at),
         }))
       }
-    })
+    }
+
+    socket.addEventListener('message', handleMessage)
 
     return () => {
       if (socket.readyState === WebSocket.OPEN) {
@@ -81,8 +78,7 @@ const TrackingForm = () => {
         })
         socket.send(leaveMessage)
       }
-      socket.removeEventListener('open', joinTracking)
-      socket.removeEventListener('message', () => {})
+      socket.removeEventListener('message', handleMessage)
     }
   }, [trackingNumber, socket])
 
@@ -164,6 +160,11 @@ const TrackingForm = () => {
         updated_at: new Date(data.updated_at),
         expected_delivery: new Date(data.expected_delivery),
       })
+
+      if (mapInstance) {
+        mapInstance.panTo({ lat: Number(data.latitude), lng: Number(data.longitude) })
+        mapInstance.setZoom(17) // Force zoom in on new track
+      }
     } catch (error) {
       console.error('Error fetching shipment data:', error)
       alert('An error occurred while fetching shipment data. Please try again later.')
@@ -208,9 +209,10 @@ const TrackingForm = () => {
     return (
       <GoogleMap
         mapContainerStyle={{ height: '300px', width: '100%' }}
-        center={{ lat: latitude, lng: longitude }}
-        zoom={zoom}
-        onLoad={(map) => setMapInstance(map)}
+        onLoad={(map) => {
+          setMapInstance(map)
+          map.setZoom(17)
+        }}
       >
         <Marker
           position={{ lat: latitude, lng: longitude }}

@@ -15,6 +15,10 @@ const trackDataSchema = new mongoose.Schema({
   longitude: Number,
   destination_latitude: Number,      
   destination_longitude: Number, 
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',  
+  },
   events: [
     {
       status: { type: String, required: true },
